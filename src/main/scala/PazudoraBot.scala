@@ -22,7 +22,7 @@ object PazudoraBot extends TelegramBot(
       }
     }
   }}
-  on("pic") { (sender, args) =>
+  on("pic") { (sender, args) => Future {
     replyTo(sender) {
       val id = args.headOption
       if(id.nonEmpty) {
@@ -32,5 +32,5 @@ object PazudoraBot extends TelegramBot(
         "give me a parameter"
       }
     }
-  }
+  }}
 }
