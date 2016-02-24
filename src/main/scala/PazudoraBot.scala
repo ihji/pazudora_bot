@@ -1,4 +1,5 @@
 import info.mukel.telegram.bots.{TelegramBot, Utils, Polling, Commands}
+import org.jsoup.nodes.Document
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,54 +13,51 @@ object PazudoraBot extends TelegramBot(
       Right(idx)
     } catch {
       case e : NumberFormatException =>
-        val str = getList(input)
-        Left(str)
+        val seq = getList(input)
+        if(seq.isEmpty) {
+          Left("결과가 없습니다.")
+        } else if(seq.length == 1) {
+          Right(seq.head._1)
+        } else {
+          Left(seq.map{_._2}.mkString("\n"))
+        }
+    }
+  }
+  def output(args: Seq[String], format: Document => String) : String = {
+    if(args.nonEmpty) {
+      nameOrId(args.mkString(" ")) match {
+        case Left(str) => str
+        case Right(idx) =>
+          val doc = getDocument(idx)
+          format(doc)
+      }
+    } else {
+      "몬스터 ID 나 이름을 입력해주세요."
     }
   }
   on("stat") { (sender, args) => Future {
-    replyTo(sender) {
-      val id = args.headOption
-      if(id.nonEmpty) {
-        nameOrId(id.get) match {
-          case Left(str) => str
-          case Right(idx) =>
-            val doc = getDocument(idx)
-            getName(doc) + "\n" + getStat(doc)
-        }
-      } else {
-        "give me a parameter"
-      }
+    replyTo(sender, parseMode = Some("Markdown")) {
+      output(args, doc => getName(doc) + "\n" + getStat(doc))
+    }
+  }}
+  on("rank") { (sender, args) => Future {
+    replyTo(sender, parseMode = Some("Markdown")) {
+      output(args, doc => getName(doc) + "\n" + getRanking(doc))
+    }
+  }}
+  on("info") { (sender, args) => Future {
+    replyTo(sender, parseMode = Some("Markdown")) {
+      output(args, doc => getName(doc) + "\n\n" + getFullStat(doc))
     }
   }}
   on("pic") { (sender, args) => Future {
-    replyTo(sender) {
-      val id = args.headOption
-      if(id.nonEmpty) {
-        nameOrId(id.get) match {
-          case Left(str) => str
-          case Right(idx) =>
-            val doc = getDocument(idx)
-            getName(doc) + "\n" + getPic(doc)._2
-        }
-
-      } else {
-        "give me a parameter"
-      }
+    replyTo(sender, parseMode = Some("Markdown")) {
+      output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})")
     }
   }}
   on("show") { (sender, args) => Future {
-    replyTo(sender) {
-      val id = args.headOption
-      if(id.nonEmpty) {
-        nameOrId(id.get) match {
-          case Left(str) => str
-          case Right(idx) =>
-            val doc = getDocument(idx)
-            getName(doc) + "\n" + getPic(doc)._2 + "\n" + getStat(doc)
-        }
-      } else {
-        "give me a parameter"
-      }
+    replyTo(sender, parseMode = Some("Markdown")) {
+      output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})\n${getStat(doc)}")
     }
   }}
 }

@@ -8,6 +8,6 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies += "info.mukel" %% "telegrambot4s" % "1.0.3-SNAPSHOT"
 
-libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "0.1.2"
+libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "0.1.1"
 
 enablePlugins(JavaAppPackaging)
