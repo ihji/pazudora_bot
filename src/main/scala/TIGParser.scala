@@ -13,8 +13,16 @@ trait TIGParser {
     val doc = browser.get(s"http://m.thisisgame.com/pad/info/monster/detail.php?code=$id")
     doc
   }
-  def getList(name: String) : Seq[(String,Int)] = {
-    ???
+  def getList(name: String) : String = {
+    val browser = new Browser
+    val doc = browser.get(s"http://m.thisisgame.com/pad/info/monster/list.php?sf=name&sw=$name")
+    val targets = for(list <- doc >?> elementList("li.list-one.split-one.half-padding")) yield list.flatMap{_ >?> texts("span.m-text1")}
+
+    println(targets)
+
+    if(targets.nonEmpty) {
+      targets.get.map{_.mkString(" ")}.mkString("\n")
+    } else "not available"
   }
   def getName(doc: Document) : String = {
     val names =
