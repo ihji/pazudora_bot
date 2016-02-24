@@ -3,7 +3,9 @@ import info.mukel.telegram.bots.{TelegramBot, Utils, Polling, Commands}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object PazudoraBot extends TelegramBot(Utils.tokenFromFile("./KEY")) with Polling with Commands with TIGParser {
+object PazudoraBot extends TelegramBot(
+  Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Utils.tokenFromFile("./KEY"))
+) with Polling with Commands with TIGParser {
   on("stat") { (sender, args) => Future {
     replyTo(sender) {
       val id = args(0)
