@@ -12,7 +12,7 @@ object PazudoraBot extends TelegramBot(
       if(id.nonEmpty) {
         try {
           val doc = getDocument(id.get.toInt)
-          getStat(doc).toString
+          getName(doc) + "\n" + getStat(doc)
         } catch {
           case e: NumberFormatException =>
             s"unknown parameter: $args"
@@ -26,8 +26,13 @@ object PazudoraBot extends TelegramBot(
     replyTo(sender) {
       val id = args.headOption
       if(id.nonEmpty) {
-        val doc = getDocument(id.get.toInt)
-        getPic(doc)._2
+        try {
+          val doc = getDocument(id.get.toInt)
+          getName(doc) + "\n" + getPic(doc)._2
+        } catch {
+          case e: NumberFormatException =>
+            s"unknown parameter: $args"
+        }
       } else {
         "give me a parameter"
       }

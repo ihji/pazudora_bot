@@ -16,6 +16,14 @@ trait TIGParser {
   def getList(name: String) : Seq[(String,Int)] = {
     ???
   }
+  def getName(doc: Document) : String = {
+    val names =
+      for(detail <- doc >?> element("#pad-info-monster-detail");
+          nameC  <- detail >?> elementList("div.tag-a.no-margin")) yield nameC.flatMap{_ >?> texts("span.m-text1")}
+    if(names.nonEmpty) {
+      names.get(0).mkString(" ")
+    } else "not available"
+  }
   def getStat(doc: Document) : String = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
