@@ -16,7 +16,7 @@ trait TIGParser {
   def getList(name: String) : Seq[(String,Int)] = {
     ???
   }
-  def getStat(doc: Document) : MonStat = {
+  def getStat(doc: Document) : String = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
           statsC <- detail >?> elementList("div.m-split.m-clear.no-outter-padding")) yield statsC.flatMap{_ >?> texts("span.m-text1")}
@@ -28,8 +28,13 @@ trait TIGParser {
     println(skills)
 
     if(stats.nonEmpty && skills.nonEmpty) {
-      MonStat(0,0,0,0,0,skills.get(0).mkString(" "),skills.get(1).mkString(" "))
-    } else MonStat(0,0,0,0,0,"not available","not available")
+      s"""${stats.get(0).mkString(" ")}
+         |${stats.get(1).mkString(" ")}
+         |${stats.get(2).mkString(" ")}
+         |${skills.get(0).mkString(" ")}
+         |${skills.get(1).mkString(" ")}
+       """.stripMargin
+    } else "not available"
 
 
   }
