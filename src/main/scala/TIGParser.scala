@@ -25,12 +25,12 @@ trait TIGParser {
     val skills = skillContent.map{_ >> texts("span.m-text1")}
     println(skills)
 
-    MonStat(0,0,0,0,0,skills(0).mkString(" "),skills(2).mkString(" "))
+    MonStat(0,0,0,0,0,skills.lift(0).getOrElse(Seq()).mkString(" "),skills.lift(2).getOrElse(Seq()).mkString(" "))
   }
   def getPic(doc: Document) : (String, String) = {
     val url = doc >> element("#pad-info-monster-detail") >> attrs("src")("img")
-    val thumbnail = url(0)
-    val full = url(1)
+    val thumbnail = url.lift(0).getOrElse("")
+    val full = url.lift(1).getOrElse("")
     (thumbnail, full)
   }
 }
