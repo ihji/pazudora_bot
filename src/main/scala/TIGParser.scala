@@ -17,20 +17,29 @@ trait TIGParser {
     ???
   }
   def getStat(doc: Document) : MonStat = {
-    val statContent = doc >> element("#pad-info-monster-detail") >> elementList("div.m-split.m-clear.no-outter-padding")
-    val stats = statContent.map{_ >> texts("span.m-text1")}
+    val stats =
+      for(detail <- doc >?> element("#pad-info-monster-detail");
+          statsC <- detail >?> elementList("div.m-split.m-clear.no-outter-padding")) yield statsC.flatMap{_ >?> texts("span.m-text1")}
     println(stats)
 
-    val skillContent = doc >> element("#pad-info-monster-detail") >> elementList("li.list-one")
-    val skills = skillContent.map{_ >> texts("span.m-text1")}
+    val skills =
+      for(detail <- doc >?> element("#pad-info-monster-detail");
+          skillC <- detail >?> elementList("li.list-one")) yield skillC.flatMap{_ >?> texts("span.m-text1")}
     println(skills)
 
-    MonStat(0,0,0,0,0,skills.lift(0).getOrElse(Seq()).mkString(" "),skills.lift(2).getOrElse(Seq()).mkString(" "))
+    if(stats.nonEmpty && skills.nonEmpty) {
+      MonStat(0,0,0,0,0,skills.get(0).mkString(" "),skills.get(1).mkString(" "))
+    } else MonStat(0,0,0,0,0,"not available","not available")
+
+
   }
   def getPic(doc: Document) : (String, String) = {
-    val url = doc >> element("#pad-info-monster-detail") >> attrs("src")("img")
-    val thumbnail = url.lift(0).getOrElse("")
-    val full = url.lift(1).getOrElse("")
-    (thumbnail, full)
+    val urls =
+      for(detail <- doc >?> element("#pad-info-monster-detail");
+          url    <- detail >?> attrs("src")("img")) yield url
+
+    if(urls.nonEmpty) {
+      (urls.get(0), urls.get(1))
+    } else ("not available", "not available")
   }
 }
