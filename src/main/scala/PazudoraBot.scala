@@ -38,4 +38,20 @@ object PazudoraBot extends TelegramBot(
       }
     }
   }}
+  on("show") { (sender, args) => Future {
+    replyTo(sender) {
+      val id = args.headOption
+      if(id.nonEmpty) {
+        try {
+          val doc = getDocument(id.get.toInt)
+          getName(doc) + "\n" + getPic(doc)._2 + "\n" + getStat(doc)
+        } catch {
+          case e: NumberFormatException =>
+            s"unknown parameter: $args"
+        }
+      } else {
+        "give me a parameter"
+      }
+    }
+  }}
 }
