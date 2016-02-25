@@ -50,17 +50,14 @@ trait TIGParser {
 
     if(totals.nonEmpty && rankings.nonEmpty) {
       val titles = "전체" +: rankings.get(0).toList
-      val positions = rankings.get(1).drop(2).sliding(5,5).toList
+      val positions = rankings.get(1).drop(2).sliding(titles.length+1,titles.length+1).toList
 
       val titleWithPositions =
         (for((title,idx) <- titles.zipWithIndex; position <- positions) yield {
           s"$title ${position(0)}: ${position(idx + 1)}"
         }).sliding(4,4).toList
 
-      s"""${titleWithPositions(0).mkString(", ")}
-         |${titleWithPositions(1).mkString(", ")}
-         |${titleWithPositions(2).mkString(", ")}
-         |${titleWithPositions(3).mkString(", ")}
+      s"""${titleWithPositions.map{_.mkString(", ")}.mkString("\n")}
        """.stripMargin
     } else "랭킹정보를 가져오지 못했습니다."
   }
