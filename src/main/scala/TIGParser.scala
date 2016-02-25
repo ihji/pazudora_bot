@@ -86,7 +86,7 @@ trait TIGParser {
       val cost = stats.get(3)
       val maxlevel = stats.get(4)
       val maxexp = stats.get(5)
-      val awks = stats.get(6) ++ stats.get(14)
+      val awks = stats.get(6) ++ stats.get.last
 
       val totalPtr = totals.get(0)(3).split(":").map{_.trim}
 
