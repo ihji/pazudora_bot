@@ -20,7 +20,7 @@ object PazudoraBot extends TelegramBot(
           Right(seq.head._1)
         } else {
           if(seq.length > 70) {
-            Left(seq.map{_._2}.take(70).mkString("\n") + s"\n\n${seq.length - 70}개의 결과가 생략됨...")
+            Left(seq.map{_._2}.takeRight(70).mkString("\n") + s"\n\n오래된 ${seq.length - 70}개의 결과가 생략됨...")
           } else {
             Left(seq.map{_._2}.mkString("\n"))
           }
