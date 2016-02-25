@@ -6,7 +6,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Utils.tokenFromFile("./KEY"))
-) with Polling with Commands with TIGParser {
+) with Polling with Commands with TIGParser with OmatomeruParser {
   def nameOrId(input: String) : Either[String,Int] = {
     try {
       val idx = input.toInt
@@ -58,6 +58,11 @@ object PazudoraBot extends TelegramBot(
   on("show") { (sender, args) => Future {
     replyTo(sender, parseMode = Some("Markdown")) {
       output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})\n${getStat(doc)}")
+    }
+  }}
+  on("roll") { (sender, args) => Future {
+    replyTo(sender, parseMode = Some("Markdown")) {
+      getGacha()
     }
   }}
 }
