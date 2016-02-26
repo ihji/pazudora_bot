@@ -57,7 +57,8 @@ trait TIGParser {
           s"$title ${position(0)}: ${position(idx + 1)}"
         }).sliding(4,4).toList
 
-      s"""${titleWithPositions.map{_.mkString(", ")}.mkString("\n")}
+      s"""${totals.get(0).mkString(", ")}
+         |${titleWithPositions.map{_.mkString(", ")}.mkString("\n")}
        """.stripMargin
     } else "랭킹정보를 가져오지 못했습니다."
   }
