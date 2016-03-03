@@ -1,1 +1,2 @@
-killall sbt
+ignored=`killall sbt`
+echo $ignored

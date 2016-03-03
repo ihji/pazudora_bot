@@ -3,4 +3,4 @@ IVY_DIR=$OPENSHIFT_DATA_DIR/.ivy
 
 cd $OPENSHIFT_REPO_DIR
 
-$OPENSHIFT_REPO_DIR/sbt -sbt-dir $SBT_DIR -ivy $IVY_DIR run
+$OPENSHIFT_REPO_DIR/sbt -sbt-launch-dir $SBT_DIR -sbt-dir $SBT_DIR -ivy $IVY_DIR -Dfile.encoding=utf8 run

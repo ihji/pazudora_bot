@@ -1,3 +1,3 @@
 # Pazudora Bot
 
-Search Puzzle and Dragons DB in a Telegram chatroom :)
+Searching Puzzle and Dragons DB in a Telegram chatroom :)
