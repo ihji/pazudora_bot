@@ -1,12 +1,10 @@
-import info.mukel.telegram.bots.{TelegramBot, Utils, Polling, Commands}
 import org.jsoup.nodes.Document
 
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
-  Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Utils.tokenFromFile("./KEY"))
-) with Polling with Commands with TIGParser with OmatomeruParser {
+  Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
+) with TIGParser with OmatomeruParser {
   def nameOrId(input: String) : Either[String,Int] = {
     try {
       val idx = input.toInt
@@ -39,34 +37,34 @@ object PazudoraBot extends TelegramBot(
       "몬스터 ID 나 이름을 입력해주세요."
     }
   }
-  on("stat") { (sender, args) => Future {
+  on("stat") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       output(args, doc => getName(doc) + "\n" + getStat(doc))
     }
-  }}
-  on("rank") { (sender, args) => Future {
+  }
+  on("rank") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       output(args, doc => getName(doc) + "\n" + getRanking(doc))
     }
-  }}
-  on("info") { (sender, args) => Future {
+  }
+  on("info") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       output(args, doc => getName(doc) + "\n\n" + getFullStat(doc))
     }
-  }}
-  on("pic") { (sender, args) => Future {
+  }
+  on("pic") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})")
     }
-  }}
-  on("show") { (sender, args) => Future {
+  }
+  on("show") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})\n${getStat(doc)}")
     }
-  }}
-  on("roll") { (sender, args) => Future {
+  }
+  on("roll") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       getGacha()
     }
-  }}
+  }
 }

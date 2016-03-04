@@ -1,12 +1,12 @@
 name := "pazudora-bot"
 
-version := "0.1"
+version := "0.2"
 
 scalaVersion := "2.11.7"
 
-resolvers += Resolver.sonatypeRepo("snapshots")
+libraryDependencies += "com.github.pengrad" % "java-telegram-bot-api" % "1.3.2"
 
-libraryDependencies += "info.mukel" %% "telegrambot4s" % "1.0.3-SNAPSHOT"
+libraryDependencies += "org.json4s" %% "json4s-native" % "3.3.0"
 
 libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "0.1.1"
 
