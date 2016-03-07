@@ -27,7 +27,7 @@ class TelegramBot(key: String) {
     while(true) {
       val updates = bot.getUpdates(updateOffset, null, null).updates().asScala
       for(update <- updates) {
-        val text = update.message().text()
+        val text = Option(update.message().text()).getOrElse("")
         val param = makeParam(text)
         if(param.nonEmpty) {
           val chatId = update.message().chat().id()
