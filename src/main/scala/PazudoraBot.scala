@@ -4,7 +4,7 @@ import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
-) with TIGParser with OmatomeruParser {
+) with TIGParser with OmatomeruParser with AppBankParser {
   def nameOrId(input: String) : Either[String,Int] = {
     try {
       val idx = input.toInt
@@ -25,13 +25,13 @@ object PazudoraBot extends TelegramBot(
         }
     }
   }
-  def output(args: Seq[String], format: Document => String) : String = {
+  def output(args: Seq[String], format: (Int,Document) => String) : String = {
     if(args.nonEmpty) {
       nameOrId(args.mkString(" ")) match {
         case Left(str) => str
         case Right(idx) =>
           val doc = getDocument(idx)
-          format(doc)
+          format(idx,doc)
       }
     } else {
       "몬스터 ID 나 이름을 입력해주세요."
@@ -39,27 +39,27 @@ object PazudoraBot extends TelegramBot(
   }
   on("stat") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, doc => getName(doc) + "\n" + getStat(doc))
+      output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n${getStat(doc)}")
     }
   }
   on("rank") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, doc => getName(doc) + "\n" + getRanking(doc))
+      output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n${getRanking(doc)}")
     }
   }
   on("info") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, doc => getName(doc) + "\n\n" + getFullStat(doc))
+      output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n\n${getFullStat(doc)}")
     }
   }
   on("pic") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})")
+      output(args, (idx,doc) => s"[${getName(doc)} ${getElementsString(idx)}](${getPic(doc)._2})")
     }
   }
   on("show") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, doc => s"[${getName(doc)}](${getPic(doc)._2})\n${getStat(doc)}")
+      output(args, (idx,doc) => s"[${getName(doc)} ${getElementsString(idx)}](${getPic(doc)._2})\n${getStat(doc)}")
     }
   }
   on("roll") { (sender, args) =>
