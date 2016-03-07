@@ -12,4 +12,6 @@ libraryDependencies += "net.ruippeixotog" %% "scala-scraper" % "0.1.1"
 
 libraryDependencies += "com.twitter" %% "finagle-http" % "6.33.0"
 
+libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.2.1"
+
 enablePlugins(JavaAppPackaging)

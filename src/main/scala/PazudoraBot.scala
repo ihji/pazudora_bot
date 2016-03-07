@@ -1,3 +1,4 @@
+import db.{OmatomeruParser, AppBankParser}
 import org.jsoup.nodes.Document
 
 import scala.io.Source
@@ -49,7 +50,9 @@ object PazudoraBot extends TelegramBot(
   }
   on("info") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n\n${getFullStat(doc)}")
+      val x = output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n\n${getFullStat(doc)}")
+      new db.TIGMonsterParser {}.getMonster(x)
+      x
     }
   }
   on("pic") { (sender, args) =>
@@ -65,6 +68,11 @@ object PazudoraBot extends TelegramBot(
   on("roll") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       getGacha()
+    }
+  }
+  on("calc") { (sender, args) =>
+    replyTo(sender, parseMode = Some("Markdown")) {
+      "not implemented."
     }
   }
 }

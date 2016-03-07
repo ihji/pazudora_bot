@@ -1,7 +1,10 @@
-import Monster._
+package db
+
+import data.Monster
+import data.Monster._
 import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.dsl.DSL._
 
 
 /**
@@ -34,7 +37,7 @@ trait AppBankParser {
     val element = getElements(id)
     println("element: "+element)
     if(element.isEmpty) "속성을 가져오지 못했습니다."
-    else element.get._1.toString + element.get._2.map{x => ", " + x.toString}.getOrElse("")
+    else element.get._1.toString + element.get._2.map{x => "/" + x.toString}.getOrElse("")
   }
   private def getElement(str: String) : Element = {
     str match {
