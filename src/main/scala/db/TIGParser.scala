@@ -87,12 +87,17 @@ trait TIGParser {
       val cost = stats.get(3)
       val maxlevel = stats.get(4)
       val maxexp = stats.get(5)
-      val awks = stats.get(6) ++ stats.get.last
+      val awks = if(stats.get.toString.contains("각성스킬")) stats.get(6) ++ stats.get.last else List("각성스킬", "없음")
 
       val totalPtr = totals.get(0)(3).split(":").map{_.trim}
 
-      val askill = skills.get(0)
-      val lskill = skills.get(1)
+      val (askill, lskill) =
+        (skills.get.toString.contains("(스킬"), skills.get.toString.contains("리더스킬")) match {
+          case (true, true) => (skills.get(0), skills.get(1))
+          case (true, false) => (skills.get(0), Seq("리더스킬", "", "없음"))
+          case (false, true) => (Seq("스킬", "", "", "없음"), skills.get(0))
+          case (false, false) => (Seq("스킬", "", "", "없음"), Seq("리더스킬", "", "없음"))
+        }
 
       s"""${hp.updated(0,s"*${hp(0)}*").mkString(" ")}
          |${atk.updated(0,s"*${atk(0)}*").mkString(" ")}
@@ -123,8 +128,13 @@ trait TIGParser {
       val atk = stats.get(1)
       val rev = stats.get(2)
 
-      val askill = skills.get(0)
-      val lskill = skills.get(1)
+      val (askill, lskill) =
+        (skills.get.toString.contains("(스킬"), skills.get.toString.contains("리더스킬")) match {
+          case (true, true) => (skills.get(0), skills.get(1))
+          case (true, false) => (skills.get(0), Seq("리더스킬", "", "없음"))
+          case (false, true) => (Seq("스킬", "", "", "없음"), skills.get(0))
+          case (false, false) => (Seq("스킬", "", "", "없음"), Seq("리더스킬", "", "없음"))
+        }
 
       s"""${hp.updated(0,s"*${hp(0)}*").mkString(" ")}
          |${atk.updated(0,s"*${atk(0)}*").mkString(" ")}
