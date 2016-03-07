@@ -50,9 +50,7 @@ object PazudoraBot extends TelegramBot(
   }
   on("info") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      val x = output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n\n${getFullStat(doc)}")
-      new db.TIGMonsterParser {}.getMonster(x)
-      x
+      output(args, (idx,doc) => s"${getName(doc)} ${getElementsString(idx)}\n\n${getFullStat(doc)}")
     }
   }
   on("pic") { (sender, args) =>
