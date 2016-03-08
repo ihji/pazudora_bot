@@ -21,7 +21,9 @@ class TelegramBot(key: String) {
       case Some("HTML") => ParseMode.HTML
       case _ => null
     }
-    Future(bot.sendMessage(chatId, msg, pm, null, null, null))
+    val ret = Future(bot.sendMessage(chatId, msg, pm, null, null, null)).map{_ =>}
+    ret.onFailure { case e : Throwable => e.printStackTrace() }
+    ret
   }
   def run(): Unit = {
     while(true) {

@@ -1,3 +1,5 @@
+package db
+
 import net.ruippeixotog.scalascraper.browser.Browser
 import org.jsoup.nodes.Document
 import net.ruippeixotog.scalascraper.dsl.DSL._
@@ -8,6 +10,26 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
   * Created by heejong.lee on 2/23/16.
   */
 trait TIGParser {
+  def nameOrId(input: String) : Either[String,Int] = {
+    try {
+      val idx = input.toInt
+      Right(idx)
+    } catch {
+      case e : NumberFormatException =>
+        val seq = getList(input)
+        if(seq.isEmpty) {
+          Left("결과가 없습니다.")
+        } else if(seq.length == 1) {
+          Right(seq.head._1)
+        } else {
+          if(seq.length > 60) {
+            Left(seq.map{_._2}.takeRight(60).mkString("\n") + s"\n\n오래된 ${seq.length - 60}개의 결과가 생략됨...")
+          } else {
+            Left(seq.map{_._2}.mkString("\n"))
+          }
+        }
+    }
+  }
   def getDocument(id: Int) : Document = {
     val browser = new Browser
     val doc = browser.get(s"http://m.thisisgame.com/pad/info/monster/detail.php?code=$id")

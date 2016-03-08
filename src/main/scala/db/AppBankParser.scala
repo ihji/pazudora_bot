@@ -1,6 +1,5 @@
 package db
 
-import data.Monster
 import data.Monster._
 import net.ruippeixotog.scalascraper.browser.Browser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._

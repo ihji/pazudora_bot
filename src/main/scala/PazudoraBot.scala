@@ -1,31 +1,12 @@
-import db.{OmatomeruParser, AppBankParser}
+import db.{TIGParser, OmatomeruParser, AppBankParser}
 import org.jsoup.nodes.Document
+import parser.{DamageConditionParser, TeamParser}
 
 import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
 ) with TIGParser with OmatomeruParser with AppBankParser {
-  def nameOrId(input: String) : Either[String,Int] = {
-    try {
-      val idx = input.toInt
-      Right(idx)
-    } catch {
-      case e : NumberFormatException =>
-        val seq = getList(input)
-        if(seq.isEmpty) {
-          Left("결과가 없습니다.")
-        } else if(seq.length == 1) {
-          Right(seq.head._1)
-        } else {
-          if(seq.length > 60) {
-            Left(seq.map{_._2}.takeRight(60).mkString("\n") + s"\n\n오래된 ${seq.length - 60}개의 결과가 생략됨...")
-          } else {
-            Left(seq.map{_._2}.mkString("\n"))
-          }
-        }
-    }
-  }
   def output(args: Seq[String], format: (Int,Document) => String) : String = {
     if(args.nonEmpty) {
       nameOrId(args.mkString(" ")) match {
@@ -70,7 +51,19 @@ object PazudoraBot extends TelegramBot(
   }
   on("calc") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      "not implemented."
+//      val input = args.mkString(" ")
+//      val splitted = input.split("=").map{_.trim}
+//      if(splitted.length != 2) "잘못된 문법입니다."
+//      else {
+//        val debug = TeamParser.parseTeam(splitted(0)) match {
+//          case Left(msg) => msg
+//          case Right(team) => team.toString
+//        }
+//        val debug2 = DamageConditionParser.parse(splitted(1))
+//        debug + "///" + debug2
+//      }
+      val x = new db.PDXLeaderSkillParser{}.getLeaderSkill(args.head.toInt)
+      x.toString
     }
   }
 }
