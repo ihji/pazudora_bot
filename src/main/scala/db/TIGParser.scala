@@ -9,11 +9,17 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
   * Created by heejong.lee on 2/23/16.
   */
 trait TIGParser {
-  def nameOrId(input: String) : Either[String,MonsterID] = {
+  def nameOrId(rawInput: String) : Either[String,MonsterID] = {
+    val (isKROpt,input) =
+      if(rawInput.toLowerCase.endsWith("+kr")) (Some(true),rawInput.dropRight(3).trim)
+      else if(rawInput.toLowerCase.endsWith("+jp")) (Some(false),rawInput.dropRight(3).trim)
+      else (None,rawInput)
     val idOpt = util.control.Exception.catching(classOf[NumberFormatException]) opt input.toInt
     val seq = idOpt match {
       case Some(id) =>
-        val idSearch = s"http://m.thisisgame.com/pad/info/monster/list.php?numjp=$id"
+        val idSearch =
+          if(isKROpt.getOrElse(false)) s"http://m.thisisgame.com/pad/info/monster/list.php?numkr=$id"
+          else s"http://m.thisisgame.com/pad/info/monster/list.php?numjp=$id"
         getListFromURL(idSearch)
       case None =>
         val nameSearch = s"http://m.thisisgame.com/pad/info/monster/list.php?sf=name&sw=$input"
@@ -22,9 +28,9 @@ trait TIGParser {
     if(seq.isEmpty) {
       Left("결과가 없습니다.")
     } else if(seq.length == 1) {
-      if(idOpt.nonEmpty && idOpt.get != seq.head._1) {
+      if(idOpt.nonEmpty && idOpt.get != seq.head._1 && isKROpt.isEmpty) {
         Left(
-          s"""한국과 일본 아이디가 다른 몬스터입니다. 정확한 검색을 위해 이름을 사용해 주세요.
+          s"""한국과 일본 아이디가 다른 몬스터입니다. 정확한 검색을 위해 서버를 지정해 주세요. 명령어 맨 마지막에 +kr 또는 +jp 를 추가하면 됩니다.
              |일본 아이디: ${idOpt.get}, 한국 아이디 ${seq.head._1}, 이름: ${seq.head._3}
            """.stripMargin)
       } else {
