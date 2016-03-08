@@ -4,48 +4,61 @@ import net.ruippeixotog.scalascraper.browser.Browser
 import org.jsoup.nodes.Document
 import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
-import net.ruippeixotog.scalascraper.dsl.DSL.Parse._
 
 /**
   * Created by heejong.lee on 2/23/16.
   */
 trait TIGParser {
-  def nameOrId(input: String) : Either[String,Int] = {
-    try {
-      val idx = input.toInt
-      Right(idx)
-    } catch {
-      case e : NumberFormatException =>
-        val seq = getList(input)
-        if(seq.isEmpty) {
-          Left("결과가 없습니다.")
-        } else if(seq.length == 1) {
-          Right(seq.head._1)
-        } else {
-          if(seq.length > 60) {
-            Left(seq.map{_._2}.takeRight(60).mkString("\n") + s"\n\n오래된 ${seq.length - 60}개의 결과가 생략됨...")
-          } else {
-            Left(seq.map{_._2}.mkString("\n"))
-          }
-        }
+  def nameOrId(input: String) : Either[String,MonsterID] = {
+    val idOpt = util.control.Exception.catching(classOf[NumberFormatException]) opt input.toInt
+    val seq = idOpt match {
+      case Some(id) =>
+        val idSearch = s"http://m.thisisgame.com/pad/info/monster/list.php?numjp=$id"
+        getListFromURL(idSearch)
+      case None =>
+        val nameSearch = s"http://m.thisisgame.com/pad/info/monster/list.php?sf=name&sw=$input"
+        getListFromURL(nameSearch)
+    }
+    if(seq.isEmpty) {
+      Left("결과가 없습니다.")
+    } else if(seq.length == 1) {
+      if(idOpt.nonEmpty && idOpt.get != seq.head._1) {
+        Left(
+          s"""한국과 일본 아이디가 다른 몬스터입니다. 정확한 검색을 위해 이름을 사용해 주세요.
+             |일본 아이디: ${idOpt.get}, 한국 아이디 ${seq.head._1}, 이름: ${seq.head._3}
+           """.stripMargin)
+      } else {
+        Right(MonsterID(seq.head._1,seq.head._2))
+      }
+    } else {
+      if(seq.length > 60) {
+        Left(seq.map{_._3}.takeRight(60).mkString("\n") + s"\n\n오래된 ${seq.length - 60}개의 결과가 생략됨...")
+      } else {
+        Left(seq.map{_._3}.mkString("\n"))
+      }
     }
   }
-  def getDocument(id: Int) : Document = {
+  def getDocument(monId: MonsterID) : Document = {
+    val id = monId.TIGid
     val browser = new Browser
     val doc = browser.get(s"http://m.thisisgame.com/pad/info/monster/detail.php?code=$id")
     doc
   }
-  def getList(name: String) : Seq[(Int, String)] = {
+
+  def getListFromURL(url: String) : Seq[(Int, Int, String)] = {
     val browser = new Browser
-    val doc = browser.get(s"http://m.thisisgame.com/pad/info/monster/list.php?sf=name&sw=$name")
-    val targets = for(list <- doc >?> elementList("li.list-one.split-one.half-padding")) yield list.flatMap{_ >?> texts("span.m-text1")}
+    val doc = browser.get(url)
+    val targets = for(list <- doc >?> elementList("li.list-one.split-one.half-padding")) yield
+      list.flatMap{x => for(a <- x >?> texts("span.m-text1"); b <- x >?> attr("href")("a")) yield (a,b)}
 
     println(targets)
 
     if(targets.nonEmpty) {
-      targets.get.map{x => (x(0).drop(3).toInt,x.updated(1,s"*${x(1)}*").mkString(" "))}
+      targets.get.map{case (x, y) => (x(0).drop(3).toInt,y.drop(16).toInt,x.updated(1,s"*${x(1)}*").mkString(" "))}
     } else Seq.empty
   }
+
+
   def getName(doc: Document) : String = {
     val names =
       for(detail <- doc >?> element("#pad-info-monster-detail");

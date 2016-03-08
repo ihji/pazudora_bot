@@ -10,7 +10,8 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
   * Created by ihji on 3/6/16.
   */
 trait AppBankParser {
-  def getElements(id: Int) : Option[(Element, Option[Element])] = {
+  def getElements(monId: MonsterID) : Option[(Element, Option[Element])] = {
+    val id = monId.id
     val browser = new Browser
     val idx = id match {
       case _ if id < 10 => s"00$id"
@@ -32,8 +33,8 @@ trait AppBankParser {
       }
     }
   }
-  def getElementsString(id: Int) = {
-    val element = getElements(id)
+  def getElementsString(monId: MonsterID) = {
+    val element = getElements(monId)
     println("element: "+element)
     if(element.isEmpty) "속성을 가져오지 못했습니다."
     else element.get._1.toString + element.get._2.map{x => "/" + x.toString}.getOrElse("")

@@ -47,8 +47,8 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("Dark").map{_ => Monster.Dark}
   val num : Parser[Double] = P(CharIn('0' to '9', ".").repX(1).!).map{java.lang.Double.parseDouble}
 
-  def getLeaderSkill(id: Int) : LeaderSkill = {
-    val desc = getLSText(id)
+  def getLeaderSkill(monId: MonsterID) : LeaderSkill = {
+    val desc = getLSText(monId)
     val conds = desc.split("\\. ").toSeq.flatMap{ d =>
       statement.parse(d) match {
         case Result.Success(v,_) => v

@@ -8,7 +8,8 @@ import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
   * Created by heejong.lee on 3/7/16.
   */
 trait PDXParser {
-  def getLSText(id: Int) : String = {
+  def getLSText(monId: MonsterID) : String = {
+    val id = monId.id
     val browser = new Browser
     val doc = browser.get(s"http://puzzledragonx.com/en/monster.asp?n=$id")
     val elems = for(elem <- doc >?> elements("table#tablestat")) yield elem.flatMap{_ >?> texts("td")}

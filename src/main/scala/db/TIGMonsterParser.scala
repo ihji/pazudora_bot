@@ -20,9 +20,9 @@ trait TIGMonsterParser extends TIGParser with AppBankParser {
       |[\p{L}\p{Z},.\(\)\d\+\*・·＝=%]+
       |\*리더스킬\* [\p{L}\p{Z},.\(\)\d\+\*・·＝=%]+
       |[\p{L}\p{Z}\n,.\(\)\d\+\*・·＝=%]+""".stripMargin.r
-  def getMonster(idx: Int) : Monster = {
-    val doc = getDocument(idx)
-    val desc = s"${getName(doc)} ${getElementsString(idx)}\n\n${getFullStat(doc)}"
+  def getMonster(monId: MonsterID) : Monster = {
+    val doc = getDocument(monId)
+    val desc = s"${getName(doc)} ${getElementsString(monId)}\n\n${getFullStat(doc)}"
     desc match {
       case info(id, ty, elem, hp, atk, rev, awk, _) =>
         println(id, ty, elem, hp, atk, rev, awk)
