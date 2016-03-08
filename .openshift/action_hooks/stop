@@ -1,2 +1,2 @@
-ignored=`killall sbt`
+ignored=`killall java`
 echo $ignored
