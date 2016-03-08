@@ -1,4 +1,4 @@
-import db.{MonsterID, TIGParser, OmatomeruParser, AppBankParser}
+import db._
 import org.jsoup.nodes.Document
 import parser.{DamageConditionParser, TeamParser}
 
@@ -6,7 +6,7 @@ import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
-) with TIGParser with OmatomeruParser with AppBankParser {
+) with TIGParser with OmatomeruParser with PDXParser {
   def output(args: Seq[String], format: (MonsterID,Document) => String) : String = {
     if(args.nonEmpty) {
       nameOrId(args.mkString(" ")) match {
@@ -21,27 +21,27 @@ object PazudoraBot extends TelegramBot(
   }
   on("stat") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"${getName(doc)} ${getElementsString(id)}\n${getStat(doc)}")
+      output(args, (id,doc) => s"${getName(doc)} ${getElementsStringFromUS(id)}\n${getStat(doc)}")
     }
   }
   on("rank") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"${getName(doc)} ${getElementsString(id)}\n${getRanking(doc)}")
+      output(args, (id,doc) => s"${getName(doc)} ${getElementsStringFromUS(id)}\n${getRanking(doc)}")
     }
   }
   on("info") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"${getName(doc)} ${getElementsString(id)}\n\n${getFullStat(doc)}")
+      output(args, (id,doc) => s"${getName(doc)} ${getElementsStringFromUS(id)}\n\n${getFullStat(doc)}")
     }
   }
   on("pic") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"[${getName(doc)} ${getElementsString(id)}](${getPic(doc)._2})")
+      output(args, (id,doc) => s"[${getName(doc)} ${getElementsStringFromUS(id)}](${getPic(doc)._2})")
     }
   }
   on("show") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"[${getName(doc)} ${getElementsString(id)}](${getPic(doc)._2})\n${getStat(doc)}")
+      output(args, (id,doc) => s"[${getName(doc)} ${getElementsStringFromUS(id)}](${getPic(doc)._2})\n${getStat(doc)}")
     }
   }
   on("roll") { (sender, args) =>

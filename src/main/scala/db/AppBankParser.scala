@@ -10,7 +10,13 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
   * Created by ihji on 3/6/16.
   */
 trait AppBankParser {
-  def getElements(monId: MonsterID) : Option[(Element, Option[Element])] = {
+  def getElementsStringFromJP(monId: MonsterID) = {
+    val element = getElements(monId)
+    println("element: "+element)
+    if(element.isEmpty) "속성을 가져오지 못했습니다."
+    else element.get._1.toString + element.get._2.map{x => "/" + x.toString}.getOrElse("")
+  }
+  private def getElements(monId: MonsterID) : Option[(Element, Option[Element])] = {
     val id = monId.id
     val browser = new Browser
     val idx = id match {
@@ -32,12 +38,6 @@ trait AppBankParser {
         case _ => None
       }
     }
-  }
-  def getElementsString(monId: MonsterID) = {
-    val element = getElements(monId)
-    println("element: "+element)
-    if(element.isEmpty) "속성을 가져오지 못했습니다."
-    else element.get._1.toString + element.get._2.map{x => "/" + x.toString}.getOrElse("")
   }
   private def getElement(str: String) : Element = {
     str match {

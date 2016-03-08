@@ -6,7 +6,7 @@ import data.Monster.AwokenSkill
 /**
   * Created by ihji on 3/7/16.
   */
-trait TIGMonsterParser extends TIGParser with AppBankParser {
+trait TIGMonsterParser extends TIGParser with PDXParser {
   val info =
     """No.(\d+) [\p{L}\p{Z},.\(\)\d\+\*・·＝=%]+ ([\p{L}/]+) ★\d+ ([\p{L}/]+)
       |
@@ -22,7 +22,7 @@ trait TIGMonsterParser extends TIGParser with AppBankParser {
       |[\p{L}\p{Z}\n,.\(\)\d\+\*・·＝=%]+""".stripMargin.r
   def getMonster(monId: MonsterID) : Monster = {
     val doc = getDocument(monId)
-    val desc = s"${getName(doc)} ${getElementsString(monId)}\n\n${getFullStat(doc)}"
+    val desc = s"${getName(doc)} ${getElementsStringFromUS(monId)}\n\n${getFullStat(doc)}"
     desc match {
       case info(id, ty, elem, hp, atk, rev, awk, _) =>
         println(id, ty, elem, hp, atk, rev, awk)
