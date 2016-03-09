@@ -1,6 +1,5 @@
 package db
 
-import data.LeaderSkill.{InputCond, TypeCond, AttrCond}
 import data.{Monster, LeaderSkill}
 import fastparse.WhitespaceApi
 import fastparse.noApi._
@@ -15,13 +14,13 @@ trait PDXLeaderSkillParser extends PDXParser {
   }
   import White._
 
-  val statement : Parser[Option[LeaderSkill.Condition]] = P(attrMag | tyMag | inputMag)
-  val inputMag : Parser[Option[LeaderSkill.Condition]] =
-    P(mag.rep(sep=",")).map{ case m => m.flatten.headOption.map{InputCond(_)} }
-  val attrMag : Parser[Option[LeaderSkill.Condition]] =
-    P(attr.rep(sep="&")~"attribute cards"~mag.rep(sep=",")).map{ case (a,m) => m.flatten.headOption.map{AttrCond(a.toSet,_)} }
-  val tyMag : Parser[Option[LeaderSkill.Condition]] =
-    P(ty.rep(sep="&")~"type cards"~mag.rep(sep=",")).map{ case (t,m) => m.flatten.headOption.map{TypeCond(t.toSet,_)} }
+  val statement : Parser[LeaderSkill => LeaderSkill] = P(attrMag | tyMag | inputMag)
+  val inputMag : Parser[LeaderSkill => LeaderSkill] =
+    P(mag.rep(sep=",")).map{ case m => identity }
+  val attrMag : Parser[LeaderSkill => LeaderSkill] =
+    P(attr.rep(sep="&")~"attribute cards"~mag.rep(sep=",")).map{ case (a,m) => m.flatten.headOption.map{x => y : LeaderSkill => y.addAttrCond(a.toSet,x)}.getOrElse(identity) }
+  val tyMag : Parser[LeaderSkill => LeaderSkill] =
+    P(ty.rep(sep="&")~"type cards"~mag.rep(sep=",")).map{ case (t,m) => m.flatten.headOption.map{x => y : LeaderSkill => y.addTypeCond(t.toSet,x)}.getOrElse(identity) }
   val mag : Parser[Option[Double]] =
     P(("ATK" | "HP" | "RCV").! ~ "x" ~ num).map{
       case ("ATK",y) => Some(y)
@@ -49,14 +48,14 @@ trait PDXLeaderSkillParser extends PDXParser {
 
   def getLeaderSkill(monId: MonsterID) : LeaderSkill = {
     val desc = getLSText(monId)
-    val conds = desc.split("\\. ").toSeq.flatMap{ d =>
+    val lskill = desc.split("\\. ").toSeq.foldLeft(new LeaderSkill){ case (l,d) =>
       statement.parse(d) match {
-        case Result.Success(v,_) => v
+        case Result.Success(v,_) => v(l)
         case _ : Result.Failure =>
           println("failed to parse: "+d)
-          None
+          l
       }
     }
-    LeaderSkill(conds)
+    lskill
   }
 }
