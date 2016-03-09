@@ -38,6 +38,16 @@ class LeaderSkill {
   def addTypeCond(tys: Set[Monster.Type], mag: Double) = {
     tys.foreach{ t => typeCond += (t -> mag) }; this
   }
+  def addComboCond(startCombo: Int, startMag: Double) = {
+    val combo = comboCond.getOrElse(ComboCond(startCombo,startMag,startCombo,startMag,0))
+    comboCond = Some(combo.copy(startCombo = startCombo, startMag = startMag))
+    this
+  }
+  def addExtraComboCond(step: Double, endCombo: Int, endMag: Double) = {
+    val combo = comboCond.getOrElse(ComboCond(endCombo,endMag,endCombo,endMag,step))
+    comboCond = Some(combo.copy(endCombo = endCombo, endMag = endMag, step = step))
+    this
+  }
 }
 
 object LeaderSkill {

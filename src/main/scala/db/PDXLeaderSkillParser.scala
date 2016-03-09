@@ -14,17 +14,33 @@ trait PDXLeaderSkillParser extends PDXParser {
   }
   import White._
 
-  val statement : Parser[LeaderSkill => LeaderSkill] = P(attrMag | tyMag | inputMag)
-  val inputMag : Parser[LeaderSkill => LeaderSkill] =
-    P(mag.rep(sep=",")).map{ case m => identity }
+  val statement : Parser[LeaderSkill => LeaderSkill] = P(
+    attrMag | tyMag |
+    comboMag | comboExtMag | combo1
+  )
+  val comboMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"at"~num~"combos").map{
+      case (a,m) => a.map{x => y : LeaderSkill => y.addComboCond(m.toInt,x)}.getOrElse(identity)
+    }
+  val comboExtMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"for each additional combo, up to"~atkMag~"at"~num~"combos").map{
+      case (step,a,m) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraComboCond(s,m.toInt,x)}}.getOrElse(identity)
+    }
+  val combo1 : Parser[LeaderSkill => LeaderSkill] =
+    P("All attribute cards"~atkMag~"when reaching"~num~"combos or above").map{
+      case (a,m) => a.map{x => y : LeaderSkill => y.addComboCond(m.toInt,x)}.getOrElse(identity)
+    }
   val attrMag : Parser[LeaderSkill => LeaderSkill] =
-    P(attr.rep(sep="&")~"attribute cards"~mag.rep(sep=",")).map{ case (a,m) => m.flatten.headOption.map{x => y : LeaderSkill => y.addAttrCond(a.toSet,x)}.getOrElse(identity) }
+    P(attr.rep(sep="&",min=1)~"attribute cards"~atkMag).map{
+      case (a,m) => m.map{x => y : LeaderSkill => y.addAttrCond(a.toSet,x)}.getOrElse(identity)
+    }
   val tyMag : Parser[LeaderSkill => LeaderSkill] =
-    P(ty.rep(sep="&")~"type cards"~mag.rep(sep=",")).map{ case (t,m) => m.flatten.headOption.map{x => y : LeaderSkill => y.addTypeCond(t.toSet,x)}.getOrElse(identity) }
-  val mag : Parser[Option[Double]] =
-    P(("ATK" | "HP" | "RCV").! ~ "x" ~ num).map{
-      case ("ATK",y) => Some(y)
-      case _ => None
+    P(ty.rep(sep="&",min=1)~("type"|"attribute")~"cards"~atkMag).map{
+      case (t,m) => m.map{x => y : LeaderSkill => y.addTypeCond(t.toSet,x)}.getOrElse(identity)
+    }
+  val atkMag : Parser[Option[Double]] =
+    P(("ATK" | "HP" | "RCV").! ~ "x" ~ num).rep(sep=",",min=1).map{
+      case ms => ms.find{_._1 == "ATK"}.map{_._2}
     }
   val ty : Parser[Monster.Type] =
     P("Devil").map{_ => Monster.Devil} |
@@ -49,10 +65,12 @@ trait PDXLeaderSkillParser extends PDXParser {
   def getLeaderSkill(monId: MonsterID) : LeaderSkill = {
     val desc = getLSText(monId)
     val lskill = desc.split("\\. ").toSeq.foldLeft(new LeaderSkill){ case (l,d) =>
-      statement.parse(d) match {
-        case Result.Success(v,_) => v(l)
-        case _ : Result.Failure =>
-          println("failed to parse: "+d)
+      val s = if(d.endsWith(".")) d.dropRight(1) else d
+      statement.parse(s) match {
+        case Result.Success(f,_) =>
+          f(l)
+        case x : Result.Failure =>
+          println("failed to parse: "+s)
           l
       }
     }
