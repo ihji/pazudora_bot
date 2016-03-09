@@ -17,11 +17,11 @@ object Input {
   case class DropSet(kind: Drop, num: Int, isRow: Boolean = false, numEnhanced: Int = 0)
 
   sealed trait Drop
-  case object Fire extends Drop
-  case object Water extends Drop
-  case object Wood extends Drop
-  case object Light extends Drop
-  case object Dark extends Drop
-  case object Heart extends Drop
-  case object Jammer extends Drop
+  case object Fire extends Drop { override def toString = "불" }
+  case object Water extends Drop { override def toString = "물" }
+  case object Wood extends Drop { override def toString = "나무" }
+  case object Light extends Drop { override def toString = "빛" }
+  case object Dark extends Drop { override def toString = "어둠" }
+  case object Heart extends Drop { override def toString = "회복" }
+  case object Jammer extends Drop { override def toString = "방해" }
 }

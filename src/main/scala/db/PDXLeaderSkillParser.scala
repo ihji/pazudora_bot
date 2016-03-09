@@ -1,6 +1,6 @@
 package db
 
-import data.{Monster, LeaderSkill}
+import data.{Input, Monster, LeaderSkill}
 import fastparse.WhitespaceApi
 import fastparse.noApi._
 
@@ -16,8 +16,11 @@ trait PDXLeaderSkillParser extends PDXParser {
 
   val statement : Parser[LeaderSkill => LeaderSkill] = P(
     attrMag | tyMag |
-    comboMag | comboExtMag | combo1
+    comboMag | comboExtMag | combo1 |
+    fixedDropMag | flexDropMag | flexExtDropMag |
+    numberMag | numberExtMag
   )
+
   val comboMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"at"~num~"combos").map{
       case (a,m) => a.map{x => y : LeaderSkill => y.addComboCond(m.toInt,x)}.getOrElse(identity)
@@ -30,6 +33,29 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("All attribute cards"~atkMag~"when reaching"~num~"combos or above").map{
       case (a,m) => a.map{x => y : LeaderSkill => y.addComboCond(m.toInt,x)}.getOrElse(identity)
     }
+
+  val fixedDropMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"when attacking with"~drop.rep(sep=","|"&",min=1)~"orb types at the same time").map{
+      case (a,d) => a.map{x => y : LeaderSkill => y.addFixedDropCond(d.toSet,x)}.getOrElse(identity)
+    }
+  val flexDropMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"when attacking with"~num~"of following orb types:"~drop.rep(sep=","|"&",min=1)).map{
+      case (a,n,d) => a.map{x => y : LeaderSkill => y.addFlexDropCond(d.toSet,n.toInt,x)}.getOrElse(identity)
+    }
+  val flexExtDropMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"for each additional orb type, up to"~atkMag~"for all"~num~"matches").map{
+      case (step,a,n) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraFlexDropCond(n.toInt,x,s)}}.getOrElse(identity)
+    }
+
+  val numberMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"when simultaneously clearing"~num~"connected"~drop.rep(sep="or",min=1)~"orbs").map{
+      case (a,n,d) => a.map{x => y : LeaderSkill => y.addNumberCond(d.toSet,n.toInt,x)}.getOrElse(identity)
+    }
+  val numberExtMag : Parser[LeaderSkill => LeaderSkill] =
+    P(atkMag~"for each additional orb, up to"~atkMag~"at"~num~"connected orb").map{
+      case (step,a,n) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraNumberCond(s,n.toInt,x)}}.getOrElse(identity)
+    }
+
   val attrMag : Parser[LeaderSkill => LeaderSkill] =
     P(attr.rep(sep="&",min=1)~"attribute cards"~atkMag).map{
       case (a,m) => m.map{x => y : LeaderSkill => y.addAttrCond(a.toSet,x)}.getOrElse(identity)
@@ -38,6 +64,7 @@ trait PDXLeaderSkillParser extends PDXParser {
     P(ty.rep(sep="&",min=1)~("type"|"attribute")~"cards"~atkMag).map{
       case (t,m) => m.map{x => y : LeaderSkill => y.addTypeCond(t.toSet,x)}.getOrElse(identity)
     }
+
   val atkMag : Parser[Option[Double]] =
     P(("ATK" | "HP" | "RCV").! ~ "x" ~ num).rep(sep=",",min=1).map{
       case ms => ms.find{_._1 == "ATK"}.map{_._2}
@@ -60,6 +87,14 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("Wood").map{_ => Monster.Wood} |
     P("Light").map{_ => Monster.Light} |
     P("Dark").map{_ => Monster.Dark}
+  val drop : Parser[Input.Drop] =
+    P("Fire").map{_ => Input.Fire} |
+    P("Water").map{_ => Input.Water} |
+    P("Wood").map{_ => Input.Wood} |
+    P("Light").map{_ => Input.Light} |
+    P("Dark").map{_ => Input.Dark} |
+    P("Heart").map{_ => Input.Heart} |
+    P("Jammer").map{_ => Input.Jammer}
   val num : Parser[Double] = P(CharIn('0' to '9', ".").repX(1).!).map{java.lang.Double.parseDouble}
 
   def getLeaderSkill(monId: MonsterID) : LeaderSkill = {
