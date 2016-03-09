@@ -57,11 +57,11 @@ trait PDXLeaderSkillParser extends PDXParser {
     }
 
   val attrMag : Parser[LeaderSkill => LeaderSkill] =
-    P(attr.rep(sep="&",min=1)~"attribute cards"~atkMag).map{
+    P(attr.rep(sep=","|"&",min=1)~"attribute cards"~atkMag).map{
       case (a,m) => m.map{x => y : LeaderSkill => y.addAttrCond(a.toSet,x)}.getOrElse(identity)
     }
   val tyMag : Parser[LeaderSkill => LeaderSkill] =
-    P(ty.rep(sep="&",min=1)~("type"|"attribute")~"cards"~atkMag).map{
+    P(ty.rep(sep=","|"&",min=1)~("type"|"attribute")~"cards"~atkMag).map{
       case (t,m) => m.map{x => y : LeaderSkill => y.addTypeCond(t.toSet,x)}.getOrElse(identity)
     }
 
@@ -97,9 +97,9 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("Jammer").map{_ => Input.Jammer}
   val num : Parser[Double] = P(CharIn('0' to '9', ".").repX(1).!).map{java.lang.Double.parseDouble}
 
-  def getLeaderSkill(monId: MonsterID) : LeaderSkill = {
-    val desc = getLSText(monId)
-    val lskill = desc.split("\\. ").toSeq.foldLeft(new LeaderSkill){ case (l,d) =>
+  def getLeaderSkill(monId: MonsterID, name: String, desc: String) : LeaderSkill = {
+    val d = getLSText(monId)
+    val lskill = d.split("\\. ").toSeq.foldLeft(new LeaderSkill(name,desc)){ case (l,d) =>
       val s = if(d.endsWith(".")) d.dropRight(1) else d
       statement.parse(s) match {
         case Result.Success(f,_) =>

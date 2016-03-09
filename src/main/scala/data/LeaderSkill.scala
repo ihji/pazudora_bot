@@ -5,7 +5,7 @@ import data.LeaderSkill.{FlexDropCond, FixedDropCond, NumberCond, ComboCond}
 /**
   * Created by heejong.lee on 3/7/16.
   */
-class LeaderSkill {
+class LeaderSkill(val name: String, val desc: String) {
   var attrCond : Map[Monster.Element,Double] = Map.empty
   var typeCond : Map[Monster.Type,Double] = Map.empty
   var comboCond : Option[ComboCond] = None
@@ -16,22 +16,28 @@ class LeaderSkill {
   override def toString = {
     val buf = new StringBuffer
     if(attrCond.nonEmpty) {
-      attrCond.foreach{ case (elem, mag) => buf.append(s"$elem 속성 $mag 배.\n")}
+      attrCond.foreach{ case (elem, mag) => buf.append(s"$elem 속성 $mag 배.")}
+      buf.append("\n")
     }
     if(typeCond.nonEmpty) {
-      typeCond.foreach{ case (ty, mag) => buf.append(s"$ty 타입 $mag 배.\n")}
+      typeCond.foreach{ case (ty, mag) => buf.append(s"$ty 타입 $mag 배.")}
+      buf.append("\n")
     }
     if(comboCond.nonEmpty) {
       buf.append(s"${comboCond.get.startCombo} 콤보 ${comboCond.get.startMag} 배 부터 ${comboCond.get.step} 배씩 증가하여 최대 ${comboCond.get.endCombo} 콤보 ${comboCond.get.endMag} 배.")
+      buf.append("\n")
     }
     if(numberCond.nonEmpty) {
       buf.append(s"${numberCond.get.drop.mkString(" 또는 ")} 드롭을 ${numberCond.get.startNumber} 개 이어 붙여 ${numberCond.get.startMag} 배 부터 ${numberCond.get.step} 배씩 증가하여 최대 ${numberCond.get.endNumber} 개 ${numberCond.get.endMag} 배.")
+      buf.append("\n")
     }
     if(fixedDropCond.nonEmpty) {
       buf.append(s"${fixedDropCond.get.drops.mkString(",")} 동시 공격시 ${fixedDropCond.get.mag} 배")
+      buf.append("\n")
     }
     if(flexDropCond.nonEmpty) {
       buf.append(s"${flexDropCond.get.drops.mkString(",")} 중 ${flexDropCond.get.startNum} 개 동시 공격시 ${flexDropCond.get.startMag} 배 부터 ${flexDropCond.get.step} 배씩 증가하여 최대 ${flexDropCond.get.endNum} 개 ${flexDropCond.get.endMag} 배.")
+      buf.append("\n")
     }
     buf.toString
   }

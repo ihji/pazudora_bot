@@ -8,7 +8,7 @@ import fastparse.noApi._
 /**
   * Created by ihji on 3/7/16.
   */
-object DamageConditionParser {
+object UserInputParser {
   val White = WhitespaceApi.Wrapper{
     import fastparse.all._
     NoTrace(" ".rep)

@@ -1,6 +1,6 @@
 name := "pazudora-bot"
 
-version := "0.2"
+version := "0.9"
 
 scalaVersion := "2.11.7"
 

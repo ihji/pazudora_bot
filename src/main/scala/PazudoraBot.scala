@@ -1,19 +1,20 @@
+import data.Monster
 import db._
-import org.jsoup.nodes.Document
-import parser.{DamageConditionParser, TeamParser}
+import parser.{UserInputParser, TeamParser}
 
 import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
-) with TIGParser with OmatomeruParser with PDXParser {
-  def output(args: Seq[String], format: (MonsterID,Document) => String) : String = {
+) with TIGSearch with OmatomeruParser with PDXParser {
+  val db = MonsterDB
+  def output(args: Seq[String], format: Monster => String) : String = {
     if(args.nonEmpty) {
       nameOrId(args.mkString(" ")) match {
         case Left(str) => str
         case Right(id) =>
-          val doc = getDocument(id)
-          format(id,doc)
+          val mon = db.getMonster(id)
+          format(mon)
       }
     } else {
       "몬스터 ID 나 이름을 입력해주세요."
@@ -21,27 +22,27 @@ object PazudoraBot extends TelegramBot(
   }
   on("stat") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"${getName(doc)} ${getElementsStringFromUS(id)}\n${getStat(doc)}")
+      output(args, mon => s"${mon.getNameString}\n${mon.getStatString}")
     }
   }
   on("rank") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"${getName(doc)} ${getElementsStringFromUS(id)}\n${getRanking(doc)}")
+      output(args, mon => s"${mon.getNameString}\n${mon.getRanking}")
     }
   }
   on("info") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"${getName(doc)} ${getElementsStringFromUS(id)}\n\n${getFullStat(doc)}")
+      output(args, mon => s"${mon.getNameString}\n\n${mon.getInfoString}")
     }
   }
   on("pic") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"[${getName(doc)} ${getElementsStringFromUS(id)}](${getPic(doc)._2})")
+      output(args, mon => s"[${mon.getNameString}](${mon.picURL})")
     }
   }
   on("show") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, (id,doc) => s"[${getName(doc)} ${getElementsStringFromUS(id)}](${getPic(doc)._2})\n${getStat(doc)}")
+      output(args, mon => s"[${mon.getNameString}](${mon.picURL})\n${mon.getStatString}")
     }
   }
   on("roll") { (sender, args) =>
@@ -51,19 +52,17 @@ object PazudoraBot extends TelegramBot(
   }
   on("calc") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-//      val input = args.mkString(" ")
-//      val splitted = input.split("=").map{_.trim}
-//      if(splitted.length != 2) "잘못된 문법입니다."
-//      else {
-//        val debug = TeamParser.parseTeam(splitted(0)) match {
-//          case Left(msg) => msg
-//          case Right(team) => team.toString
-//        }
-//        val debug2 = DamageConditionParser.parse(splitted(1))
-//        debug + "///" + debug2
-//      }
-      val x = new db.PDXLeaderSkillParser{}.getLeaderSkill(MonsterID(args.head.toInt,args.head.toInt))
-      x.toString
+      val input = args.mkString(" ")
+      val splitted = input.split("=").map{_.trim}
+      if(splitted.length != 2) "잘못된 문법입니다."
+      else {
+        val debug = TeamParser.parseTeam(splitted(0)) match {
+          case Left(msg) => msg
+          case Right(team) => team.leader.mon.lSkill.toString
+        }
+        val debug2 = UserInputParser.parse(splitted(1))
+        debug + "///" + debug2
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 package data
 
-import data.Monster.{AwokenSkill, Element, Type}
+import data.Monster.{ActiveSkill, AwokenSkill, Element, Type}
 
 /**
   * Created by ihji on 3/6/16.
@@ -8,18 +8,57 @@ import data.Monster.{AwokenSkill, Element, Type}
 case class Monster
 (
   id: Int,
-  element: (Element,Option[Element]),
+  krName: String,
+  jpName: String,
+  thumbURL: String,
+  picURL: String,
   ty: (Type,Option[Type],Option[Type]),
-  atk: Int,
-  hp: Int,
-  rev: Int,
+  star: Int,
+  element: (Element,Option[Element]),
+  hp: (Int,Int),
+  atk: (Int,Int),
+  rev: (Int,Int),
+  cost: Int,
+  maxLevel: Int,
+  maxExp: Int,
+  rating: Int,
+  ranking: String,
   awokenSkill: Seq[AwokenSkill],
-  plusAtk: Int = 0,
-  plusHp: Int = 0,
-  plusRev: Int = 0
-)
+  aSkill: Option[ActiveSkill],
+  lSkill: Option[LeaderSkill]
+) {
+  def getNameString = {
+    s"""No.$id *$krName* $jpName ${ty._1+ty._2.map{"/"+_}.getOrElse("")+ty._3.map{"/"+_}.getOrElse("")} ★$star ${element._1+element._2.map{"/"+_}.getOrElse("")}"""
+  }
+  def getStatString = {
+    s"""*HP* ${hp._1} > ${hp._2} (${hp._2 - hp._1})
+       |*공격* ${atk._1} > ${atk._2} (${atk._2 - atk._1})
+       |*회복* ${rev._1} > ${rev._2} (${rev._2 - rev._1})
+       |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}
+       |${if(aSkill.nonEmpty) aSkill.get.desc else "없음"}
+       |*리더스킬* ${if(lSkill.nonEmpty) lSkill.get.name else ""}
+       |${if(lSkill.nonEmpty) lSkill.get.desc else "없음"}
+     """.stripMargin
+  }
+  def getInfoString = {
+    s"""*HP* ${hp._1} > ${hp._2} (${hp._2 - hp._1})
+       |*공격* ${atk._1} > ${atk._2} (${atk._2 - atk._1})
+       |*회복* ${rev._1} > ${rev._2} (${rev._2 - rev._1})
+       |*코스트* $cost *최대레벨* $maxLevel *총경험치* $maxExp *환산치* $rating
+       |*각성스킬* ${if(awokenSkill.isEmpty) "없음" else awokenSkill.mkString(", ")}
+       |
+       |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}
+       |${if(aSkill.nonEmpty) aSkill.get.desc else "없음"}
+       |*리더스킬* ${if(lSkill.nonEmpty) lSkill.get.name else ""}
+       |${if(lSkill.nonEmpty) lSkill.get.desc else "없음"}
+     """.stripMargin
+  }
+  def getRanking = ranking
+}
 
 object Monster {
+  case class ActiveSkill(name: String, maxTurn: Int, maxLevel: Int, desc: String)
+
   sealed trait Element
   case object Fire extends Element { override def toString = "불" }
   case object Water extends Element { override def toString = "물" }
