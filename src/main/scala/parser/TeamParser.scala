@@ -30,13 +30,13 @@ object TeamParser extends TIGSearch {
       else {
         val (name, plus) = (pair(0), pair(1))
         try {
-          nameOrId(name).right.map { x => UserMonster(db.getMonster(x)).copy(plusAtk = plus.toInt) }
+          nameOrId(name).left.map{ x => s"잘못된 입력입니다 ($name): $x" }.right.map{ x => UserMonster(db.getMonster(x)).copy(plusAtk = plus.toInt) }
         } catch {
           case e : NumberFormatException => Left("숫자가 아닙니다: "+plus)
         }
       }
     } else {
-      nameOrId(name).right.map{db.getMonster _ andThen (UserMonster(_,0,0,0))}
+      nameOrId(name).left.map{ x => s"잘못된 입력입니다 ($name): $x" }.right.map{db.getMonster _ andThen (UserMonster(_,0,0,0))}
     }
   }
 }

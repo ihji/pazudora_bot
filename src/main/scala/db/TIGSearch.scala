@@ -25,7 +25,7 @@ trait TIGSearch {
         getListFromURL(nameSearch)
     }
     if(seq.isEmpty) {
-      Left("결과가 없습니다.")
+      Left("검색 결과가 없습니다.")
     } else if(seq.length == 1) {
       if(idOpt.nonEmpty && idOpt.get != seq.head._1 && isKROpt.isEmpty) {
         Left(
@@ -37,9 +37,9 @@ trait TIGSearch {
       }
     } else {
       if(seq.length > 60) {
-        Left(seq.map{_._3}.takeRight(60).mkString("\n") + s"\n\n오래된 ${seq.length - 60}개의 결과가 생략됨...")
+        Left("대상 몬스터가 여러개 입니다.\n"+seq.map{_._3}.takeRight(60).mkString("\n") + s"\n\n오래된 ${seq.length - 60}개의 결과가 생략됨...")
       } else {
-        Left(seq.map{_._3}.mkString("\n"))
+        Left("대상 몬스터가 여러개 입니다.\n"+seq.map{_._3}.mkString("\n"))
       }
     }
   }

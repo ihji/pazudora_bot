@@ -108,8 +108,15 @@ class DamageSimulator(team: Team) {
 
 object DamageSimulator {
   case class Damage(fireDamage: Double, waterDamage: Double, woodDamage: Double, lightDamage: Double, darkDamage: Double, allAttack: Boolean = false) {
+    private def friendly(d: Double) : String = java.text.NumberFormat.getIntegerInstance().format(d.toInt)
     override def toString = {
-      s"불 $fireDamage 물 $waterDamage 나무 $woodDamage 빛 $lightDamage 어둠 $darkDamage"
+      Seq(
+        if(fireDamage != 0) Some("불 "+friendly(fireDamage)) else None,
+        if(waterDamage != 0) Some("물 "+friendly(waterDamage)) else None,
+        if(woodDamage != 0) Some("나무 "+friendly(woodDamage)) else None,
+        if(lightDamage != 0) Some("빛 "+friendly(lightDamage)) else None,
+        if(darkDamage != 0) Some("어둠 "+friendly(darkDamage)) else None
+      ).flatten.mkString(" ")
     }
     def +(other: Damage) : Damage = {
       Damage(fireDamage+other.fireDamage,waterDamage+other.waterDamage,woodDamage+other.woodDamage,lightDamage+other.lightDamage,darkDamage+other.darkDamage)
@@ -138,11 +145,12 @@ Input:
 /calc 2507+99, 2239, 2013+99, 2396+99, 893+1, 2507+99 = 어둠 1횡
 
 Correct result:
-각성 신마왕 루시퍼 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 120624.0
-요람의 저승신 페르세포네 체력+0 공격+0 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 76764.0
-각성 아누비스 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 105927.0
-각성 로키 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 123839.0
-단죄의 저승신 페르세포네 체력+0 공격+1 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 86802.0
-각성 신마왕 루시퍼 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 120624.0
-종합 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 634580.0
+각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 120624
+요람의 저승신 페르세포네 체+0 공+0 회+0: 어둠 76764
+각성 아누비스 체+0 공+99 회+0: 어둠 105927
+각성 로키 체+0 공+99 회+0: 어둠 123839
+단죄의 저승신 페르세포네 체+0 공+1 회+0: 어둠 86802
+각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 120624
+최대: 어둠 123839
+종합: 어둠 634580
  */
