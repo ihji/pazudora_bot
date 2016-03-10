@@ -77,6 +77,7 @@ object Monster {
   case object Machine extends Type { override def toString = "머신" }
   case object PowerUp extends Type { override def toString = "강화합성용" }
   case object Evolution extends Type { override def toString = "진화소재" }
+  case object Awake extends Type { override def toString = "능력각성" }
   case object Point extends Type { override def toString = "매각용" }
 
   sealed trait AwokenSkill
@@ -176,6 +177,7 @@ object Monster {
       case _ if str == Machine.toString => Machine
       case _ if str == PowerUp.toString => PowerUp
       case _ if str == Evolution.toString => Evolution
+      case _ if str == Awake.toString => Awake
       case _ if str == Point.toString => Point
     }
   }

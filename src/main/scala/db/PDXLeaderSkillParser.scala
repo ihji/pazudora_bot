@@ -80,6 +80,7 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("Machine").map{_ => Monster.Machine} |
     P("PowerUp").map{_ => Monster.PowerUp} |
     P("Evolution").map{_ => Monster.Evolution} |
+    P("Awake").map{_ => Monster.Awake} |
     P("Point").map{_ => Monster.Point}
   val attr : Parser[Monster.Element] =
     P("Fire").map{_ => Monster.Fire} |

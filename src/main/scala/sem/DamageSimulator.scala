@@ -28,7 +28,13 @@ class DamageSimulator(team: Team) {
     input.combo.foldLeft(d) {
       (damage,set) =>
         val drop = 1 + 0.25*(set.num - 3)
-        val coef = if(equals(mainAttr,set.kind)) 1.0 else if(subAttr.nonEmpty && equals(subAttr.get,set.kind)) 0.3 else 0
+        val coef =
+          (mainAttr.toDrop == set.kind, subAttr.exists{_.toDrop == set.kind}) match {
+            case (true,true) => 1.1
+            case (true,false) => 1.0
+            case (false,true) => 1.0 / 3.0
+            case (false,false) => 0
+          }
         val twoway = if(set.num == 4) mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk} * 1.5 else 1
         val finalMag = drop * coef * twoway
         val finalAtk = baseAtk * finalMag
