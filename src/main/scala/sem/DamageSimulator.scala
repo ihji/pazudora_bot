@@ -21,6 +21,18 @@ class DamageSimulator(team: Team) {
         map + (mon -> finalDamage)
     }
   }
+  def getDamageString(input: Input) : String = {
+    val map = run(input)
+    val buf = new StringBuffer
+    val (totalDamage,maxDamage) = team.toSeq.foldLeft(Damage(0,0,0,0,0),Damage(0,0,0,0,0)){
+      case ((total,max),m) =>
+        buf.append(s"*${m.toString}*: ${map(m).toString}\n")
+        (total + map(m), max max map(m))
+    }
+    buf.append(s"*최대*: ${maxDamage.toString}\n")
+    buf.append(s"*종합*: ${totalDamage.toString}")
+    buf.toString
+  }
   def multiplyDrops(input: Input, mon: UserMonster)(d: Damage) : Damage = {
     val (mainAttr,subAttr) = mon.mon.element
     val baseAtk = mon.getAtk
@@ -37,7 +49,7 @@ class DamageSimulator(team: Team) {
           }
         val twoway = if(set.num == 4) mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk} * 1.5 else 1
         val finalMag = drop * coef * twoway
-        val finalAtk = baseAtk * finalMag
+        val finalAtk = Math.ceil(Math.ceil(baseAtk * drop * coef) * twoway)
         println(s"$set 드롭배수 $drop 주부속 $coef 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
         damage.add(set.kind,finalAtk)
     }
@@ -45,7 +57,7 @@ class DamageSimulator(team: Team) {
   def multiplyCombos(input: Input)(d: Damage) : Damage = {
     val combo = 1 + 0.25*(input.combo.length - 1)
     println(s"콤보배수 $combo")
-    d.map{_ * combo}
+    d.map{x => Math.ceil(x * combo)}
   }
   def multiplyRowEnhance(input: Input, team: Team)(d: Damage) : Damage = {
     def countAwokenSkills(t: Team, enh: Monster.AwokenSkill) : Int = {
@@ -61,11 +73,11 @@ class DamageSimulator(team: Team) {
     val darkRowEn = 1 + (countAwokenSkills(team, Monster.DarkEn) * 0.1 * countRowDrop(input,Input.Dark))
     println(s"횡강배수 불 $fireRowEn 물 $waterRowEn 나무 $woodRowEn 빛 $lightRowEn 어둠 $darkRowEn")
     d.copy(
-      fireDamage = d.fireDamage * fireRowEn,
-      waterDamage = d.waterDamage * waterRowEn,
-      woodDamage = d.woodDamage * woodRowEn,
-      lightDamage = d.lightDamage * lightRowEn,
-      darkDamage = d.darkDamage * darkRowEn
+      fireDamage = Math.round(d.fireDamage * fireRowEn),
+      waterDamage = Math.round(d.waterDamage * waterRowEn),
+      woodDamage = Math.round(d.woodDamage * woodRowEn),
+      lightDamage = Math.round(d.lightDamage * lightRowEn),
+      darkDamage = Math.round(d.darkDamage * darkRowEn)
     )
   }
   def multiplyLeaderSkill(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
@@ -75,11 +87,11 @@ class DamageSimulator(team: Team) {
     println(s"내리더 $leaderMag 친구리더 $friendMag")
     println(s"리더스킬 최종: $finalMag")
     d.copy(
-      fireDamage = d.fireDamage * finalMag.fire,
-      waterDamage = d.waterDamage * finalMag.water,
-      woodDamage = d.woodDamage * finalMag.wood,
-      lightDamage = d.lightDamage * finalMag.light,
-      darkDamage = d.darkDamage * finalMag.dark
+      fireDamage = Math.round(d.fireDamage * finalMag.fire),
+      waterDamage = Math.round(d.waterDamage * finalMag.water),
+      woodDamage = Math.round(d.woodDamage * finalMag.wood),
+      lightDamage = Math.round(d.lightDamage * finalMag.light),
+      darkDamage = Math.round(d.darkDamage * finalMag.dark)
     )
   }
   private def equals(elem: Monster.Element, drop: Input.Drop) = {
@@ -96,6 +108,15 @@ class DamageSimulator(team: Team) {
 
 object DamageSimulator {
   case class Damage(fireDamage: Double, waterDamage: Double, woodDamage: Double, lightDamage: Double, darkDamage: Double, allAttack: Boolean = false) {
+    override def toString = {
+      s"불 $fireDamage 물 $waterDamage 나무 $woodDamage 빛 $lightDamage 어둠 $darkDamage"
+    }
+    def +(other: Damage) : Damage = {
+      Damage(fireDamage+other.fireDamage,waterDamage+other.waterDamage,woodDamage+other.woodDamage,lightDamage+other.lightDamage,darkDamage+other.darkDamage)
+    }
+    def max(other: Damage) : Damage = {
+      Damage(fireDamage max other.fireDamage,waterDamage max other.waterDamage,woodDamage max other.woodDamage,lightDamage max other.lightDamage,darkDamage max other.darkDamage)
+    }
     def add(kind: Input.Drop, damage: Double) : Damage = {
       kind match {
         case Input.Fire => this.copy(fireDamage = fireDamage + damage)
@@ -111,3 +132,17 @@ object DamageSimulator {
     }
   }
 }
+
+/*
+Input:
+/calc 2507+99, 2239, 2013+99, 2396+99, 893+1, 2507+99 = 어둠 1횡
+
+Correct result:
+각성 신마왕 루시퍼 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 120624.0
+요람의 저승신 페르세포네 체력+0 공격+0 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 76764.0
+각성 아누비스 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 105927.0
+각성 로키 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 123839.0
+단죄의 저승신 페르세포네 체력+0 공격+1 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 86802.0
+각성 신마왕 루시퍼 체력+0 공격+99 회복+0 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 120624.0
+종합 불 0.0 물 0.0 나무 0.0 빛 0.0 어둠 634580.0
+ */

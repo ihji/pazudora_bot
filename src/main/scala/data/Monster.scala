@@ -37,7 +37,7 @@ case class Monster
        |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}
        |${if(aSkill.nonEmpty) aSkill.get.desc else "없음"}
        |*리더스킬* ${if(lSkill.nonEmpty) lSkill.get.name else ""}
-       |${if(lSkill.nonEmpty) lSkill.get.desc else "없음"}
+       |${if(lSkill.nonEmpty) lSkill.get.krDesc else "없음"}
      """.stripMargin
   }
   def getInfoString = {
@@ -50,7 +50,7 @@ case class Monster
        |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}
        |${if(aSkill.nonEmpty) aSkill.get.desc else "없음"}
        |*리더스킬* ${if(lSkill.nonEmpty) lSkill.get.name else ""}
-       |${if(lSkill.nonEmpty) lSkill.get.desc else "없음"}
+       |${if(lSkill.nonEmpty) lSkill.get.krDesc else "없음"}
      """.stripMargin
   }
   def getRanking = ranking

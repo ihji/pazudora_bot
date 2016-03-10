@@ -5,7 +5,7 @@ import data.LeaderSkill._
 /**
   * Created by heejong.lee on 3/7/16.
   */
-class LeaderSkill(val name: String, val desc: String) {
+class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
   var attrCond : Map[Monster.Element,Double] = Map.empty
   var typeCond : Map[Monster.Type,Double] = Map.empty
   var comboCond : Option[ComboCond] = None

@@ -64,10 +64,15 @@ object PazudoraBot extends TelegramBot(
               case Left(msg) => msg
               case Right(input) =>
                 println(team + "\n" + input)
-                new DamageSimulator(team).run(input).toString
+                new DamageSimulator(team).getDamageString(input)
             }
         }
       }
+    }
+  }
+  on("ls") { (sender, args) =>
+    replyTo(sender, parseMode = Some("Markdown")) {
+      output(args, mon => s"${mon.getNameString} 리더스킬\n${mon.lSkill.map{x => s"한글설명: ${x.krDesc}\n영어설명: ${x.enDesc}\n해석결과: ${x.toString}"}.getOrElse("리더스킬 없음.")}")
     }
   }
 }

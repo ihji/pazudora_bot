@@ -100,7 +100,7 @@ trait PDXLeaderSkillParser extends PDXParser {
 
   def getLeaderSkill(monId: MonsterID, name: String, desc: String) : LeaderSkill = {
     val d = getLSText(monId)
-    val lskill = d.split("\\. ").toSeq.foldLeft(new LeaderSkill(name,desc)){ case (l,d) =>
+    val lskill = d.split("\\. ").toSeq.foldLeft(new LeaderSkill(name,desc,d)){ case (l,d) =>
       val s = if(d.endsWith(".")) d.dropRight(1) else d
       statement.parse(s) match {
         case Result.Success(f,_) =>
