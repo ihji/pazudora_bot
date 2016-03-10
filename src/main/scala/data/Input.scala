@@ -16,7 +16,7 @@ object Input {
 
   case class DropSet(kind: Drop, num: Int, isRow: Boolean = false, numEnhanced: Int = 0) {
     override def toString = {
-      s"${kind}드롭 ${num}개 ${if(isRow)"횡배열" else ""}"
+      s"${kind}드롭 $num${if(numEnhanced != 0) s"(+$numEnhanced)" else ""}개${if(isRow) " 횡배열" else ""}"
     }
   }
 

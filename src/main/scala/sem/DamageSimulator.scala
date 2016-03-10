@@ -13,7 +13,7 @@ class DamageSimulator(team: Team) {
       case (map,mon) =>
         val baseDamage = new Damage(0,0,0,0,0)
         val damageEquation =
-          multiplyDrops(input,mon)_ andThen
+          multiplyDrops(input,team,mon)_ andThen
             multiplyCombos(input) andThen
             multiplyRowEnhance(input,team) andThen
             multiplyLeaderSkill(input,team,mon)
@@ -33,7 +33,7 @@ class DamageSimulator(team: Team) {
     buf.append(s"*종합*: ${totalDamage.toString}")
     buf.toString
   }
-  def multiplyDrops(input: Input, mon: UserMonster)(d: Damage) : Damage = {
+  def multiplyDrops(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
     val (mainAttr,subAttr) = mon.mon.element
     val baseAtk = mon.getAtk
     println(s"$mon ${mon.mon.element} 공격력 $baseAtk ")
@@ -47,10 +47,21 @@ class DamageSimulator(team: Team) {
             case (false,true) => 1.0 / 3.0
             case (false,false) => 0
           }
+        val dropEnhanceCount =
+          set.kind match {
+            case Input.Fire => countAwokenSkills(team,Monster.FireDropEn)
+            case Input.Water => countAwokenSkills(team,Monster.WaterDropEn)
+            case Input.Wood => countAwokenSkills(team,Monster.WoodDropEn)
+            case Input.Light => countAwokenSkills(team,Monster.LightDropEn)
+            case Input.Dark => countAwokenSkills(team,Monster.DarkDropEn)
+            case Input.Heart => countAwokenSkills(team,Monster.HeartDropEn)
+            case _ => 0
+          }
+        val dropEnh = (1 + 0.06 * set.numEnhanced) * (1 + 0.05 * dropEnhanceCount)
         val twoway = if(set.num == 4) mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk} * 1.5 else 1
-        val finalMag = drop * coef * twoway
-        val finalAtk = Math.ceil(Math.ceil(baseAtk * drop * coef) * twoway)
-        println(s"$set 드롭배수 $drop 주부속 $coef 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
+        val finalMag = drop * coef * dropEnh * twoway
+        val finalAtk = Math.ceil(Math.ceil(baseAtk * drop * coef * dropEnh) * twoway)
+        println(s"$set 드롭배수 $drop 주부속 $coef 드롭강화배수 $dropEnh 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
         damage.add(set.kind,finalAtk)
     }
   }
@@ -60,12 +71,6 @@ class DamageSimulator(team: Team) {
     d.map{x => Math.ceil(x * combo)}
   }
   def multiplyRowEnhance(input: Input, team: Team)(d: Damage) : Damage = {
-    def countAwokenSkills(t: Team, enh: Monster.AwokenSkill) : Int = {
-      t.toSeq.map{_.mon.awokenSkill.count{_ == enh}}.sum
-    }
-    def countRowDrop(in: Input, d: Input.Drop) : Int ={
-      in.combo.count{x => x.kind == d && x.isRow}
-    }
     val fireRowEn = 1 + (countAwokenSkills(team, Monster.FireEn) * 0.1 * countRowDrop(input,Input.Fire))
     val waterRowEn = 1 + (countAwokenSkills(team, Monster.WaterEn) * 0.1 * countRowDrop(input,Input.Water))
     val woodRowEn = 1 + (countAwokenSkills(team, Monster.WoodEn) * 0.1 * countRowDrop(input,Input.Wood))
@@ -103,6 +108,12 @@ class DamageSimulator(team: Team) {
       case (Monster.Dark,Input.Dark) => true
       case _ => false
     }
+  }
+  private def countAwokenSkills(t: Team, enh: Monster.AwokenSkill) : Int = {
+    t.toSeq.map{_.mon.awokenSkill.count{_ == enh}}.sum
+  }
+  private def countRowDrop(in: Input, d: Input.Drop) : Int = {
+    in.combo.count{x => x.kind == d && x.isRow}
   }
 }
 
@@ -142,15 +153,15 @@ object DamageSimulator {
 
 /*
 Input:
-/calc 2507+99, 2239, 2013+99, 2396+99, 893+1, 2507+99 = 어둠 1횡
+/calc 2507+99, 2239, 2013+99, 2396+99, 893+1, 2507+99 = 어둠 1횡 각 2강화
 
 Correct result:
-각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 120624
-요람의 저승신 페르세포네 체+0 공+0 회+0: 어둠 76764
-각성 아누비스 체+0 공+99 회+0: 어둠 105927
-각성 로키 체+0 공+99 회+0: 어둠 123839
-단죄의 저승신 페르세포네 체+0 공+1 회+0: 어둠 86802
-각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 120624
-최대: 어둠 123839
-종합: 어둠 634580
+각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 135,091
+요람의 저승신 페르세포네 체+0 공+0 회+0: 어둠 85,982
+각성 아누비스 체+0 공+99 회+0: 어둠 118,656
+각성 로키 체+0 공+99 회+0: 어둠 138,700
+단죄의 저승신 페르세포네 체+0 공+1 회+0: 어둠 97,234
+각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 135,091
+최대: 어둠 138,700
+종합: 어둠 710,754
  */
