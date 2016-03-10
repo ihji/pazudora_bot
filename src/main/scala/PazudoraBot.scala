@@ -1,6 +1,7 @@
 import data.Monster
 import db._
 import parser.{UserInputParser, TeamParser}
+import sem.DamageSimulator
 
 import scala.io.Source
 
@@ -56,12 +57,16 @@ object PazudoraBot extends TelegramBot(
       val splitted = input.split("=").map{_.trim}
       if(splitted.length != 2) "잘못된 문법입니다."
       else {
-        val debug = TeamParser.parseTeam(splitted(0)) match {
+        TeamParser.parseTeam(splitted(0)) match {
           case Left(msg) => msg
-          case Right(team) => team.leader.mon.lSkill.toString
+          case Right(team) =>
+            UserInputParser.parse(splitted(1)) match {
+              case Left(msg) => msg
+              case Right(input) =>
+                println(team + "\n" + input)
+                new DamageSimulator(team).run(input).toString
+            }
         }
-        val debug2 = UserInputParser.parse(splitted(1))
-        debug + "///" + debug2
       }
     }
   }

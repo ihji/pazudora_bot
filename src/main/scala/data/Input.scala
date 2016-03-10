@@ -14,7 +14,11 @@ case class Input(combo: Seq[DropSet]) {
 object Input {
   val empty = Input(Seq.empty)
 
-  case class DropSet(kind: Drop, num: Int, isRow: Boolean = false, numEnhanced: Int = 0)
+  case class DropSet(kind: Drop, num: Int, isRow: Boolean = false, numEnhanced: Int = 0) {
+    override def toString = {
+      s"${kind}드롭 ${num}개 ${if(isRow)"횡배열" else ""}"
+    }
+  }
 
   sealed trait Drop
   case object Fire extends Drop { override def toString = "불" }

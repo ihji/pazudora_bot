@@ -1,6 +1,6 @@
 package data
 
-import data.LeaderSkill.{FlexDropCond, FixedDropCond, NumberCond, ComboCond}
+import data.LeaderSkill._
 
 /**
   * Created by heejong.lee on 3/7/16.
@@ -12,6 +12,45 @@ class LeaderSkill(val name: String, val desc: String) {
   var numberCond : Option[NumberCond] = None
   var fixedDropCond : Option[FixedDropCond] = None
   var flexDropCond : Option[FlexDropCond] = None
+
+  def getAtkMag(input: Input, team: Team, mon: Monster) : Mag = {
+    val attrMag = attrCond.getOrElse(mon.element._1,1.0) max mon.element._2.map{attrCond.getOrElse(_,1.0)}.getOrElse(1.0)
+    val typeMag = typeCond.getOrElse(mon.ty._1,1.0) max mon.ty._2.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0) max mon.ty._3.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0)
+    val comboMag = comboCond.map{ c =>
+      val combo = input.combo.length
+      if(combo >= c.endCombo) c.endMag
+      else if(combo < c.startCombo) 1.0
+      else {
+        val comboMap = ((c.startCombo until c.endCombo) zip (c.startMag until c.endMag by c.step)).toMap
+        comboMap.getOrElse(combo,1.0)
+      }
+    }.getOrElse(1.0)
+    val numberMag = numberCond.map{ n =>
+      val number = (input.combo.filter{x => n.drop(x.kind)}.map{_.num} :+ 0).max
+      if(number >= n.endNumber) n.endMag
+      else if(number < n.startNumber) 1.0
+      else {
+        val numberMap = ((n.startNumber until n.endNumber) zip (n.startMag until n.endMag by n.step)).toMap
+        numberMap.getOrElse(number,1.0)
+      }
+    }.getOrElse(1.0)
+    val fixedDropMag = fixedDropCond.map{ f =>
+      if(f.drops.subsetOf(input.combo.map{_.kind}.toSet)) f.mag
+      else 1.0
+    }.getOrElse(1.0)
+    val flexDropMag = flexDropCond.map{ f =>
+      val matchedSet = input.combo.map{_.kind}.toSet
+      val resultOpt = f.drops.subsets.filter{x => x.size >= f.startNum && x.size <= f.endNum}.find(_ == matchedSet)
+      if(resultOpt.isEmpty) 1.0
+      else {
+        val numMap = ((f.startNum to f.endNum) zip (f.startMag to f.endMag by f.step)).toMap
+        numMap.getOrElse(matchedSet.size, 1.0)
+      }
+    }.getOrElse(1.0)
+    println(s"리더스킬 속성배수 $attrMag 타입배수 $typeMag 콤보배수 $comboMag 이어붙이기배수 $numberMag 고정색배수 $fixedDropMag 자유색배수 $flexDropMag")
+    val finalMag = attrMag * typeMag * comboMag * numberMag * fixedDropMag * flexDropMag
+    Mag(finalMag,finalMag,finalMag,finalMag,finalMag)
+  }
 
   override def toString = {
     val buf = new StringBuffer
@@ -93,4 +132,11 @@ object LeaderSkill {
   case class NumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double, endNumber: Int, endMag: Double, step: Double)
   case class FixedDropCond(drops: Set[Input.Drop], mag: Double)
   case class FlexDropCond(drops: Set[Input.Drop], startNum: Int, startMag: Double, endNum: Int, endMag: Double, step: Double)
+  case class Mag(fire: Double, water: Double, wood: Double, light: Double, dark: Double) {
+    override def toString = s"불 ${fire}배 물 ${water}배 나무 ${wood}배 빛 ${light}배 어둠 ${dark}배"
+    def *(other: Mag) : Mag = Mag(fire*other.fire,water*other.water,wood*other.wood,light*other.light,dark*other.dark)
+  }
+  object Mag {
+    val identity = Mag(1.0,1.0,1.0,1.0,1.0)
+  }
 }

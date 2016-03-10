@@ -18,8 +18,10 @@ object UserInputParser {
   val setp : Parser[Input => Input] = P(color ~ num ~ &("셋") ~ "셋").map{ case (c,n) => x => (0 until n).foldLeft(x){case (i,_) => i.add(DropSet(c,3))} }
   val twop : Parser[Input => Input] = P(color ~ num ~ &("투웨이") ~ "투웨이").map{ case (c,n) => x => (0 until n).foldLeft(x){case (i,_) => i.add(DropSet(c,4))} }
   val rowp : Parser[Input => Input] = P(color ~ num ~ &("횡") ~ "횡").map{ case (c,n) => x => (0 until n).foldLeft(x){case (i,_) => i.add(DropSet(c,6,isRow=true))} }
+  val manyrowp : Parser[Input => Input] = P(color ~ num ~ &("개횡") ~ "개횡").map{ case (c,n) => x => x.add(DropSet(c,n,isRow=true))}
+  val manyp : Parser[Input => Input] = P(color ~ num ~ &("개") ~ "개").map{ case (c,n) => x => x.add(DropSet(c,n))}
 
-  val damageInput : Parser[Seq[Input => Input]] = (setp | twop | rowp).rep(min = 1)
+  val damageInput : Parser[Seq[Input => Input]] = (setp | twop | rowp | manyrowp | manyp).rep(min = 1)
 
   val num : Parser[Int] = P(CharIn('0' to '9').repX(1).!).map{_.toInt}
 

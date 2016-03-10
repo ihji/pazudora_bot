@@ -59,12 +59,12 @@ case class Monster
 object Monster {
   case class ActiveSkill(name: String, maxTurn: Int, maxLevel: Int, desc: String)
 
-  sealed trait Element
-  case object Fire extends Element { override def toString = "불" }
-  case object Water extends Element { override def toString = "물" }
-  case object Wood extends Element { override def toString = "나무" }
-  case object Light extends Element { override def toString = "빛" }
-  case object Dark extends Element { override def toString = "어둠" }
+  sealed trait Element { def toDrop : Input.Drop }
+  case object Fire extends Element { override def toString = "불"; def toDrop = Input.Fire }
+  case object Water extends Element { override def toString = "물"; def toDrop = Input.Water  }
+  case object Wood extends Element { override def toString = "나무"; def toDrop = Input.Wood }
+  case object Light extends Element { override def toString = "빛"; def toDrop = Input.Light  }
+  case object Dark extends Element { override def toString = "어둠"; def toDrop = Input.Dark  }
 
   sealed trait Type
   case object Devil extends Type { override def toString = "악마" }
