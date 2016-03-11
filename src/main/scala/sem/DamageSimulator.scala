@@ -57,10 +57,10 @@ class DamageSimulator(team: Team) {
 
         val bases =
           (mainAttr.toDrop == set.kind, subAttr.exists{_.toDrop == set.kind}) match {
-            case (true,true) => (baseAtk, Math.ceil(baseAtk * 0.1).toInt)
-            case (true,false) => (baseAtk, 0)
-            case (false,true) => (0, Math.ceil(baseAtk / 3.0).toInt)
-            case (false,false) => (0, 0)
+            case (true,true) => (baseAtk.toDouble, baseAtk * 0.1)
+            case (true,false) => (baseAtk.toDouble, 0.0)
+            case (false,true) => (0.0, baseAtk / 3.0)
+            case (false,false) => (0.0, 0.0)
           }
 
         val finalAtk = (atk(bases._1), atk(bases._2))
