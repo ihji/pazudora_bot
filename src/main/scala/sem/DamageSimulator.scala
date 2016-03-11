@@ -95,12 +95,17 @@ class DamageSimulator(team: Team) {
     val finalCondMag = leaderMag.cond * friendMag.cond
     println(s"기본배수 $finalNoCondMag 조건부배수 $finalCondMag")
     println(s"리더스킬 최종: ${finalNoCondMag * finalCondMag}")
+    def roundUpMult(seq: Seq[Double])(damages: (Double, Double)) : (Double, Double) = {
+      seq.foldLeft(damages) {
+        case ((fst,snd),dam) => (Math.round(fst * dam), Math.round(snd * dam))
+      }
+    }
     d.copy(
-      fireDamage = (Math.round(Math.round(d.fireDamage._1 * finalCondMag.fire) * finalNoCondMag.fire), Math.round(Math.round(d.fireDamage._2 * finalCondMag.fire) * finalNoCondMag.fire)),
-      waterDamage = (Math.round(Math.round(d.waterDamage._1 * finalCondMag.water) * finalNoCondMag.water), Math.round(Math.round(d.waterDamage._2 * finalCondMag.water) * finalNoCondMag.water)),
-      woodDamage = (Math.round(Math.round(d.woodDamage._1 * finalCondMag.wood) * finalNoCondMag.wood), Math.round(Math.round(d.woodDamage._2 * finalCondMag.wood) * finalNoCondMag.wood)),
-      lightDamage = (Math.round(Math.round(d.lightDamage._1 * finalCondMag.light) * finalNoCondMag.light), Math.round(Math.round(d.lightDamage._2 * finalCondMag.light) * finalNoCondMag.light)),
-      darkDamage = (Math.round(Math.round(d.darkDamage._1 * finalCondMag.dark) * finalNoCondMag.dark), Math.round(Math.round(d.darkDamage._2 * finalCondMag.dark) * finalNoCondMag.dark))
+      fireDamage = roundUpMult(Seq(leaderMag.cond.fire,friendMag.cond.fire,finalNoCondMag.fire))(d.fireDamage),
+      waterDamage = roundUpMult(Seq(leaderMag.cond.water,friendMag.cond.water,finalNoCondMag.water))(d.waterDamage),
+      woodDamage = roundUpMult(Seq(leaderMag.cond.wood,friendMag.cond.wood,finalNoCondMag.wood))(d.woodDamage),
+      lightDamage = roundUpMult(Seq(leaderMag.cond.light,friendMag.cond.light,finalNoCondMag.light))(d.lightDamage),
+      darkDamage = roundUpMult(Seq(leaderMag.cond.dark,friendMag.cond.dark,finalNoCondMag.dark))(d.darkDamage)
     )
   }
   private def equals(elem: Monster.Element, drop: Input.Drop) = {
