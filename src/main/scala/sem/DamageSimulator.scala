@@ -28,8 +28,9 @@ class DamageSimulator(team: Team) {
         buf.append(s"*${m.toString}*: ${map(m).toString}\n")
         (total + map(m), max max map(m))
     }
-    buf.append(s"*최대*: ${maxDamage.toString}\n")
-    buf.append(s"*종합*: ${totalDamage.toString}")
+    buf.append(s"*최대*: ${maxDamage.toString(Math.max)}\n")
+    buf.append(s"*종합*: ${totalDamage.toString(_+_)} ")
+    buf.append(s"전체 ${Damage.friendly(totalDamage.sum)}")
     buf.toString
   }
   def multiplyDrops(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
@@ -128,7 +129,7 @@ class DamageSimulator(team: Team) {
 
 object DamageSimulator {
   case class Damage(fireDamage: (Double,Double), waterDamage: (Double,Double), woodDamage: (Double,Double), lightDamage: (Double,Double), darkDamage: (Double,Double), mainAllAttack: Option[Monster.Element] = None, subAllAttack: Option[Monster.Element] = None) {
-    private def friendly(d: Double) : String = java.text.NumberFormat.getIntegerInstance().format(d.toInt)
+    import Damage.friendly
     override def toString = {
       Seq(
         if(fireDamage._1 != 0) Some("불 "+friendly(fireDamage._1)) else None,
@@ -142,6 +143,22 @@ object DamageSimulator {
         if(darkDamage._1 != 0) Some("어둠 "+friendly(darkDamage._1)) else None,
         if(darkDamage._2 != 0) Some("어둠부 "+friendly(darkDamage._2)) else None
       ).flatten.mkString(" ")
+    }
+    def toString(f: (Double,Double) => Double) = {
+      Seq(
+        if(f(fireDamage._1, fireDamage._2) != 0) Some("불 "+friendly(f(fireDamage._1, fireDamage._2))) else None,
+        if(f(waterDamage._1, waterDamage._2) != 0) Some("물 "+friendly(f(waterDamage._1, waterDamage._2))) else None,
+        if(f(woodDamage._1, woodDamage._2) != 0) Some("나무 "+friendly(f(woodDamage._1, woodDamage._2))) else None,
+        if(f(lightDamage._1, lightDamage._2) != 0) Some("빛 "+friendly(f(lightDamage._1, lightDamage._2))) else None,
+        if(f(darkDamage._1, darkDamage._2) != 0) Some("어둠 "+friendly(f(darkDamage._1, darkDamage._2))) else None
+      ).flatten.mkString(" ")
+    }
+    def sum : Double = {
+      fireDamage._1 + fireDamage._2 +
+      waterDamage._1 + waterDamage._2 +
+      woodDamage._1 + woodDamage._2 +
+      lightDamage._1 + lightDamage._2 +
+      darkDamage._1 + darkDamage._2
     }
     def +(other: Damage) : Damage = {
       Damage(
@@ -183,5 +200,6 @@ object DamageSimulator {
   }
   object Damage {
     val empty = Damage((0,0),(0,0),(0,0),(0,0),(0,0))
+    def friendly(d: Double) : String = java.text.NumberFormat.getIntegerInstance().format(d.toInt)
   }
 }
