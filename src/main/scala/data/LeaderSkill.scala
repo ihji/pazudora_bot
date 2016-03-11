@@ -12,45 +12,58 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
   var numberCond : Option[NumberCond] = None
   var fixedDropCond : Option[FixedDropCond] = None
   var flexDropCond : Option[FlexDropCond] = None
+  var enhDropCond : Option[EnhDropCond] = None
 
   def getAtkMag(input: Input, team: Team, mon: Monster) : Mags = {
-    val attrMag = attrCond.getOrElse(mon.element._1,1.0) max mon.element._2.map{attrCond.getOrElse(_,1.0)}.getOrElse(1.0)
-    val typeMag = typeCond.getOrElse(mon.ty._1,1.0) max mon.ty._2.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0) max mon.ty._3.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0)
+    val attrMag = Mag(attrCond.getOrElse(mon.element._1,1.0) max mon.element._2.map{attrCond.getOrElse(_,1.0)}.getOrElse(1.0))
+    val typeMag = Mag(typeCond.getOrElse(mon.ty._1,1.0) max mon.ty._2.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0) max mon.ty._3.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0))
     val comboMag = comboCond.map{ c =>
       val combo = input.combo.length
-      if(combo >= c.endCombo) c.endMag
-      else if(combo < c.startCombo) 1.0
+      if(combo >= c.endCombo) Mag(c.endMag)
+      else if(combo < c.startCombo) Mag.identity
       else {
         val comboMap = ((c.startCombo until c.endCombo) zip (c.startMag until c.endMag by c.step)).toMap
-        comboMap.getOrElse(combo,1.0)
+        Mag(comboMap.getOrElse(combo,1.0))
       }
-    }.getOrElse(1.0)
+    }.getOrElse(Mag.identity)
     val numberMag = numberCond.map{ n =>
       val number = (input.combo.filter{x => n.drop(x.kind)}.map{_.num} :+ 0).max
-      if(number >= n.endNumber) n.endMag
-      else if(number < n.startNumber) 1.0
+      if(number >= n.endNumber) Mag(n.endMag)
+      else if(number < n.startNumber) Mag.identity
       else {
         val numberMap = ((n.startNumber until n.endNumber) zip (n.startMag until n.endMag by n.step)).toMap
-        numberMap.getOrElse(number,1.0)
+        Mag(numberMap.getOrElse(number,1.0))
       }
-    }.getOrElse(1.0)
+    }.getOrElse(Mag.identity)
     val fixedDropMag = fixedDropCond.map{ f =>
-      if(f.drops.subsetOf(input.combo.map{_.kind}.toSet)) f.mag
-      else 1.0
-    }.getOrElse(1.0)
+      if(f.drops.subsetOf(input.combo.map{_.kind}.toSet)) Mag(f.mag)
+      else Mag.identity
+    }.getOrElse(Mag.identity)
     val flexDropMag = flexDropCond.map{ f =>
       val matchedSet = input.combo.map{_.kind}.toSet
       val resultOpt = f.drops.subsets.filter{x => x.size >= f.startNum && x.size <= f.endNum}.find(_ == matchedSet)
-      if(resultOpt.isEmpty) 1.0
+      if(resultOpt.isEmpty) Mag.identity
       else {
         val numMap = ((f.startNum to f.endNum) zip (f.startMag to f.endMag by f.step)).toMap
-        numMap.getOrElse(matchedSet.size, 1.0)
+        Mag(numMap.getOrElse(matchedSet.size, 1.0))
       }
-    }.getOrElse(1.0)
-    println(s"리더스킬 속성배수 $attrMag 타입배수 $typeMag 콤보배수 $comboMag 이어붙이기배수 $numberMag 고정색배수 $fixedDropMag 자유색배수 $flexDropMag")
+    }.getOrElse(Mag.identity)
+    val enhDropMag = enhDropCond.flatMap{ e =>
+      input.combo.find{x => x.num == e.num && x.numEnhanced >= e.enNum}.map{ d =>
+        d.kind match {
+          case Input.Fire => Mag.identity.copy(fire = e.mag)
+          case Input.Water => Mag.identity.copy(water = e.mag)
+          case Input.Wood => Mag.identity.copy(wood = e.mag)
+          case Input.Light => Mag.identity.copy(light = e.mag)
+          case Input.Dark => Mag.identity.copy(dark = e.mag)
+          case _ => Mag.identity
+        }
+      }
+    }.getOrElse(Mag.identity)
+    println(s"리더스킬:\n속성배수 $attrMag\n타입배수 $typeMag\n콤보배수 $comboMag\n이어붙이기배수 $numberMag\n고정색배수 $fixedDropMag\n자유색배수 $flexDropMag\n강화드롭배수 $enhDropMag")
     val noCondFinalMag = attrMag * typeMag
-    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag
-    Mags(Mag(noCondFinalMag,noCondFinalMag,noCondFinalMag,noCondFinalMag,noCondFinalMag),Mag(condFinalMag,condFinalMag,condFinalMag,condFinalMag,condFinalMag))
+    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag * enhDropMag
+    Mags(noCondFinalMag,condFinalMag)
   }
 
   override def toString = {
@@ -117,6 +130,11 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
     flexDropCond = Some(drop.copy(drops = drops, startNum = startNum, startMag = startMag))
     this
   }
+  def addEnhDropCond(num: Int, enNum: Int, mag: Double) = {
+    val enh = enhDropCond.getOrElse(EnhDropCond(num, enNum, mag))
+    enhDropCond = Some(enh.copy(num = num, enNum = enNum, mag = mag))
+    this
+  }
   def addExtraFlexDropCond(endNum: Int, endMag: Double, step: Double) = {
     val initDrops =
       if(endNum == 5) Set[Input.Drop](Input.Fire, Input.Water, Input.Wood, Input.Light, Input.Dark)
@@ -133,11 +151,13 @@ object LeaderSkill {
   case class NumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double, endNumber: Int, endMag: Double, step: Double)
   case class FixedDropCond(drops: Set[Input.Drop], mag: Double)
   case class FlexDropCond(drops: Set[Input.Drop], startNum: Int, startMag: Double, endNum: Int, endMag: Double, step: Double)
+  case class EnhDropCond(num: Int, enNum: Int, mag: Double)
   case class Mag(fire: Double, water: Double, wood: Double, light: Double, dark: Double) {
     override def toString = s"불 ${fire}배 물 ${water}배 나무 ${wood}배 빛 ${light}배 어둠 ${dark}배"
     def *(other: Mag) : Mag = Mag(fire*other.fire,water*other.water,wood*other.wood,light*other.light,dark*other.dark)
   }
   object Mag {
+    def apply(d: Double) : Mag = Mag(d,d,d,d,d)
     val identity = Mag(1.0,1.0,1.0,1.0,1.0)
   }
   case class Mags(noCond: Mag, cond: Mag)

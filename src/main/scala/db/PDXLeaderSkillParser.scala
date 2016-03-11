@@ -18,7 +18,8 @@ trait PDXLeaderSkillParser extends PDXParser {
     attrMag | tyMag |
     comboMag | comboExtMag | combo1 |
     fixedDropMag | flexDropMag | flexExtDropMag |
-    numberMag | numberExtMag
+    numberMag | numberExtMag |
+    enDropMag
   )
 
   val comboMag : Parser[LeaderSkill => LeaderSkill] =
@@ -54,6 +55,11 @@ trait PDXLeaderSkillParser extends PDXParser {
   val numberExtMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"for each additional orb, up to"~atkMag~"at"~num~"connected orb").map{
       case (step,a,n) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraNumberCond(s,n.toInt,x)}}.getOrElse(identity)
+    }
+
+  val enDropMag : Parser[LeaderSkill => LeaderSkill] =
+    P("Matched attribute"~atkMag~"when matching exactly"~num~"connected orbs with at least"~num~"enhanced orb").map{
+      case (a,num,enNum) => a.map{x => y : LeaderSkill => y.addEnhDropCond(num.toInt, enNum.toInt, x)}.getOrElse(identity)
     }
 
   val attrMag : Parser[LeaderSkill => LeaderSkill] =
