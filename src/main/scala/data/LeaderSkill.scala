@@ -13,7 +13,7 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
   var fixedDropCond : Option[FixedDropCond] = None
   var flexDropCond : Option[FlexDropCond] = None
 
-  def getAtkMag(input: Input, team: Team, mon: Monster) : Mag = {
+  def getAtkMag(input: Input, team: Team, mon: Monster) : Mags = {
     val attrMag = attrCond.getOrElse(mon.element._1,1.0) max mon.element._2.map{attrCond.getOrElse(_,1.0)}.getOrElse(1.0)
     val typeMag = typeCond.getOrElse(mon.ty._1,1.0) max mon.ty._2.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0) max mon.ty._3.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0)
     val comboMag = comboCond.map{ c =>
@@ -48,8 +48,9 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
       }
     }.getOrElse(1.0)
     println(s"리더스킬 속성배수 $attrMag 타입배수 $typeMag 콤보배수 $comboMag 이어붙이기배수 $numberMag 고정색배수 $fixedDropMag 자유색배수 $flexDropMag")
-    val finalMag = attrMag * typeMag * comboMag * numberMag * fixedDropMag * flexDropMag
-    Mag(finalMag,finalMag,finalMag,finalMag,finalMag)
+    val noCondFinalMag = attrMag * typeMag
+    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag
+    Mags(Mag(noCondFinalMag,noCondFinalMag,noCondFinalMag,noCondFinalMag,noCondFinalMag),Mag(condFinalMag,condFinalMag,condFinalMag,condFinalMag,condFinalMag))
   }
 
   override def toString = {
@@ -138,5 +139,9 @@ object LeaderSkill {
   }
   object Mag {
     val identity = Mag(1.0,1.0,1.0,1.0,1.0)
+  }
+  case class Mags(noCond: Mag, cond: Mag)
+  object Mags {
+    val identity = Mags(Mag.identity, Mag.identity)
   }
 }

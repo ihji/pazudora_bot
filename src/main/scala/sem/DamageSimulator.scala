@@ -1,6 +1,6 @@
 package sem
 
-import data.LeaderSkill.Mag
+import data.LeaderSkill.{Mags, Mag}
 import data.{Monster, UserMonster, Input, Team}
 import sem.DamageSimulator.Damage
 
@@ -86,17 +86,18 @@ class DamageSimulator(team: Team) {
     )
   }
   def multiplyLeaderSkill(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
-    val leaderMag = team.leader.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(Mag.identity)
-    val friendMag = team.friend.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(Mag.identity)
-    val finalMag = leaderMag * friendMag
-    println(s"내리더 $leaderMag 친구리더 $friendMag")
-    println(s"리더스킬 최종: $finalMag")
+    val leaderMag = team.leader.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(Mags.identity)
+    val friendMag = team.friend.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(Mags.identity)
+    val finalNoCondMag = leaderMag.noCond * friendMag.noCond
+    val finalCondMag = leaderMag.cond * friendMag.cond
+    println(s"기본배수 $finalNoCondMag 조건부배수 $finalCondMag")
+    println(s"리더스킬 최종: ${finalNoCondMag * finalCondMag}")
     d.copy(
-      fireDamage = Math.round(Math.round(d.fireDamage * leaderMag.fire) * friendMag.fire),
-      waterDamage = Math.round(Math.round(d.waterDamage * leaderMag.water) * friendMag.water),
-      woodDamage = Math.round(Math.round(d.woodDamage * leaderMag.wood) * friendMag.wood),
-      lightDamage = Math.round(Math.round(d.lightDamage * leaderMag.light) * friendMag.light),
-      darkDamage = Math.round(Math.round(d.darkDamage * leaderMag.dark) * friendMag.dark)
+      fireDamage = Math.round(Math.round(d.fireDamage * finalCondMag.fire) * finalNoCondMag.fire),
+      waterDamage = Math.round(Math.round(d.waterDamage * finalCondMag.water) * finalNoCondMag.water),
+      woodDamage = Math.round(Math.round(d.woodDamage * finalCondMag.wood) * finalNoCondMag.wood),
+      lightDamage = Math.round(Math.round(d.lightDamage * finalCondMag.light) * finalNoCondMag.light),
+      darkDamage = Math.round(Math.round(d.darkDamage * finalCondMag.dark) * finalNoCondMag.dark)
     )
   }
   private def equals(elem: Monster.Element, drop: Input.Drop) = {
