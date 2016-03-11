@@ -11,7 +11,7 @@ class DamageSimulator(team: Team) {
   def run(input: Input): Map[UserMonster,Damage] = {
     team.toSeq.foldLeft(Map.empty[UserMonster,Damage]) {
       case (map,mon) =>
-        val baseDamage = new Damage(0,0,0,0,0)
+        val baseDamage = Damage.empty
         val damageEquation =
           multiplyDrops(input,team,mon)_ andThen
             multiplyCombos(input) andThen
@@ -23,7 +23,7 @@ class DamageSimulator(team: Team) {
   }
   def getDamageString(map: Map[UserMonster,Damage]) : String = {
     val buf = new StringBuffer
-    val (totalDamage,maxDamage) = team.toSeq.foldLeft(Damage(0,0,0,0,0),Damage(0,0,0,0,0)){
+    val (totalDamage,maxDamage) = team.toSeq.foldLeft(Damage.empty,Damage.empty){
       case ((total,max),m) =>
         buf.append(s"*${m.toString}*: ${map(m).toString}\n")
         (total + map(m), max max map(m))
@@ -39,13 +39,6 @@ class DamageSimulator(team: Team) {
     input.combo.foldLeft(d) {
       (damage,set) =>
         val drop = 1 + 0.25*(set.num - 3)
-        val coef =
-          (mainAttr.toDrop == set.kind, subAttr.exists{_.toDrop == set.kind}) match {
-            case (true,true) => 1.1
-            case (true,false) => 1.0
-            case (false,true) => 1.0 / 3.0
-            case (false,false) => 0
-          }
         val dropEnhanceCount =
           set.kind match {
             case Input.Fire => countAwokenSkills(team,Monster.FireDropEn)
@@ -59,9 +52,19 @@ class DamageSimulator(team: Team) {
         val dropEnh = (1 + 0.06 * set.numEnhanced) * (if(set.numEnhanced != 0) 1 + 0.05 * dropEnhanceCount else 1)
         val twowayCount = mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk}
         val twoway = if(set.num == 4 && twowayCount != 0) Array.fill(twowayCount)(1.5).product else 1
-        val finalMag = drop * coef * dropEnh * twoway
-        val finalAtk = Math.ceil(Math.ceil(baseAtk * drop * coef * dropEnh) * twoway)
-        println(s"$set 드롭배수 $drop 주부속 $coef 드롭강화배수 $dropEnh 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
+        val finalMag = drop * dropEnh * twoway
+        def atk(base: Double) = Math.ceil(Math.ceil(base * drop * dropEnh) * twoway)
+
+        val bases =
+          (mainAttr.toDrop == set.kind, subAttr.exists{_.toDrop == set.kind}) match {
+            case (true,true) => (baseAtk, Math.ceil(baseAtk * 0.1).toInt)
+            case (true,false) => (baseAtk, 0)
+            case (false,true) => (0, Math.ceil(baseAtk / 3.0).toInt)
+            case (false,false) => (0, 0)
+          }
+
+        val finalAtk = (atk(bases._1), atk(bases._2))
+        println(s"$set 드롭배수 $drop 드롭강화배수 $dropEnh 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
         damage.add(set.kind,finalAtk)
     }
   }
@@ -78,11 +81,11 @@ class DamageSimulator(team: Team) {
     val darkRowEn = 1 + (countAwokenSkills(team, Monster.DarkEn) * 0.1 * countRowDrop(input,Input.Dark))
     println(s"횡강배수 불 $fireRowEn 물 $waterRowEn 나무 $woodRowEn 빛 $lightRowEn 어둠 $darkRowEn")
     d.copy(
-      fireDamage = Math.round(d.fireDamage * fireRowEn),
-      waterDamage = Math.round(d.waterDamage * waterRowEn),
-      woodDamage = Math.round(d.woodDamage * woodRowEn),
-      lightDamage = Math.round(d.lightDamage * lightRowEn),
-      darkDamage = Math.round(d.darkDamage * darkRowEn)
+      fireDamage = (Math.round(d.fireDamage._1 * fireRowEn), Math.round(d.fireDamage._2 * fireRowEn)),
+      waterDamage = (Math.round(d.waterDamage._1 * waterRowEn), Math.round(d.waterDamage._2 * waterRowEn)),
+      woodDamage = (Math.round(d.woodDamage._1 * woodRowEn), Math.round(d.woodDamage._2 * woodRowEn)),
+      lightDamage = (Math.round(d.lightDamage._1 * lightRowEn), Math.round(d.lightDamage._2 * lightRowEn)),
+      darkDamage = (Math.round(d.darkDamage._1 * darkRowEn), Math.round(d.darkDamage._2 * darkRowEn))
     )
   }
   def multiplyLeaderSkill(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
@@ -93,11 +96,11 @@ class DamageSimulator(team: Team) {
     println(s"기본배수 $finalNoCondMag 조건부배수 $finalCondMag")
     println(s"리더스킬 최종: ${finalNoCondMag * finalCondMag}")
     d.copy(
-      fireDamage = Math.round(Math.round(d.fireDamage * finalCondMag.fire) * finalNoCondMag.fire),
-      waterDamage = Math.round(Math.round(d.waterDamage * finalCondMag.water) * finalNoCondMag.water),
-      woodDamage = Math.round(Math.round(d.woodDamage * finalCondMag.wood) * finalNoCondMag.wood),
-      lightDamage = Math.round(Math.round(d.lightDamage * finalCondMag.light) * finalNoCondMag.light),
-      darkDamage = Math.round(Math.round(d.darkDamage * finalCondMag.dark) * finalNoCondMag.dark)
+      fireDamage = (Math.round(Math.round(d.fireDamage._1 * finalCondMag.fire) * finalNoCondMag.fire), Math.round(Math.round(d.fireDamage._2 * finalCondMag.fire) * finalNoCondMag.fire)),
+      waterDamage = (Math.round(Math.round(d.waterDamage._1 * finalCondMag.water) * finalNoCondMag.water), Math.round(Math.round(d.waterDamage._2 * finalCondMag.water) * finalNoCondMag.water)),
+      woodDamage = (Math.round(Math.round(d.woodDamage._1 * finalCondMag.wood) * finalNoCondMag.wood), Math.round(Math.round(d.woodDamage._2 * finalCondMag.wood) * finalNoCondMag.wood)),
+      lightDamage = (Math.round(Math.round(d.lightDamage._1 * finalCondMag.light) * finalNoCondMag.light), Math.round(Math.round(d.lightDamage._2 * finalCondMag.light) * finalNoCondMag.light)),
+      darkDamage = (Math.round(Math.round(d.darkDamage._1 * finalCondMag.dark) * finalNoCondMag.dark), Math.round(Math.round(d.darkDamage._2 * finalCondMag.dark) * finalNoCondMag.dark))
     )
   }
   private def equals(elem: Monster.Element, drop: Input.Drop) = {
@@ -119,36 +122,62 @@ class DamageSimulator(team: Team) {
 }
 
 object DamageSimulator {
-  case class Damage(fireDamage: Double, waterDamage: Double, woodDamage: Double, lightDamage: Double, darkDamage: Double, allAttack: Boolean = false) {
+  case class Damage(fireDamage: (Double,Double), waterDamage: (Double,Double), woodDamage: (Double,Double), lightDamage: (Double,Double), darkDamage: (Double,Double), mainAllAttack: Option[Monster.Element] = None, subAllAttack: Option[Monster.Element] = None) {
     private def friendly(d: Double) : String = java.text.NumberFormat.getIntegerInstance().format(d.toInt)
     override def toString = {
       Seq(
-        if(fireDamage != 0) Some("불 "+friendly(fireDamage)) else None,
-        if(waterDamage != 0) Some("물 "+friendly(waterDamage)) else None,
-        if(woodDamage != 0) Some("나무 "+friendly(woodDamage)) else None,
-        if(lightDamage != 0) Some("빛 "+friendly(lightDamage)) else None,
-        if(darkDamage != 0) Some("어둠 "+friendly(darkDamage)) else None
+        if(fireDamage._1 != 0) Some("불 "+friendly(fireDamage._1)) else None,
+        if(fireDamage._2 != 0) Some("불부 "+friendly(fireDamage._2)) else None,
+        if(waterDamage._1 != 0) Some("물 "+friendly(waterDamage._1)) else None,
+        if(waterDamage._2 != 0) Some("물부 "+friendly(waterDamage._2)) else None,
+        if(woodDamage._1 != 0) Some("나무 "+friendly(woodDamage._1)) else None,
+        if(woodDamage._2 != 0) Some("나무부 "+friendly(woodDamage._2)) else None,
+        if(lightDamage._1 != 0) Some("빛 "+friendly(lightDamage._1)) else None,
+        if(lightDamage._2 != 0) Some("빛부 "+friendly(lightDamage._2)) else None,
+        if(darkDamage._1 != 0) Some("어둠 "+friendly(darkDamage._1)) else None,
+        if(darkDamage._2 != 0) Some("어둠부 "+friendly(darkDamage._2)) else None
       ).flatten.mkString(" ")
     }
     def +(other: Damage) : Damage = {
-      Damage(fireDamage+other.fireDamage,waterDamage+other.waterDamage,woodDamage+other.woodDamage,lightDamage+other.lightDamage,darkDamage+other.darkDamage)
+      Damage(
+        (fireDamage._1+other.fireDamage._1,fireDamage._2+other.fireDamage._2),
+        (waterDamage._1+other.waterDamage._1,waterDamage._2+other.waterDamage._2),
+        (woodDamage._1+other.woodDamage._1,woodDamage._2+other.woodDamage._2),
+        (lightDamage._1+other.lightDamage._1,lightDamage._2+other.lightDamage._2),
+        (darkDamage._1+other.darkDamage._1,darkDamage._2+other.darkDamage._2)
+      )
     }
     def max(other: Damage) : Damage = {
-      Damage(fireDamage max other.fireDamage,waterDamage max other.waterDamage,woodDamage max other.woodDamage,lightDamage max other.lightDamage,darkDamage max other.darkDamage)
+      Damage(
+        (fireDamage._1 max other.fireDamage._1, fireDamage._2 max other.fireDamage._2),
+        (waterDamage._1 max other.waterDamage._1, waterDamage._2 max other.waterDamage._2),
+        (woodDamage._1 max other.woodDamage._1, woodDamage._2 max other.woodDamage._2),
+        (lightDamage._1 max other.lightDamage._1, lightDamage._2 max other.lightDamage._2),
+        (darkDamage._1 max other.darkDamage._1, darkDamage._2 max other.darkDamage._2)
+      )
     }
-    def add(kind: Input.Drop, damage: Double) : Damage = {
+    def add(kind: Input.Drop, damage: (Double,Double)) : Damage = {
       kind match {
-        case Input.Fire => this.copy(fireDamage = fireDamage + damage)
-        case Input.Water => this.copy(waterDamage = waterDamage + damage)
-        case Input.Wood => this.copy(woodDamage = woodDamage + damage)
-        case Input.Light => this.copy(lightDamage = lightDamage + damage)
-        case Input.Dark => this.copy(darkDamage = darkDamage + damage)
+        case Input.Fire => this.copy(fireDamage = (fireDamage._1 + damage._1, fireDamage._2 + damage._2))
+        case Input.Water => this.copy(waterDamage = (waterDamage._1 + damage._1, waterDamage._2 + damage._2))
+        case Input.Wood => this.copy(woodDamage = (woodDamage._1 + damage._1, woodDamage._2 + damage._2))
+        case Input.Light => this.copy(lightDamage = (lightDamage._1 + damage._1, lightDamage._2 + damage._2))
+        case Input.Dark => this.copy(darkDamage = (darkDamage._1 + damage._1, darkDamage._2 + damage._2))
         case _ => this
       }
     }
     def map(f: Double => Double) : Damage = {
-      this.copy(fireDamage = f(fireDamage), waterDamage = f(waterDamage), woodDamage = f(woodDamage), lightDamage = f(lightDamage), darkDamage = f(darkDamage))
+      this.copy(
+        fireDamage = (f(fireDamage._1),f(fireDamage._2)),
+        waterDamage = (f(waterDamage._1),f(waterDamage._2)),
+        woodDamage = (f(woodDamage._1),f(woodDamage._2)),
+        lightDamage = (f(lightDamage._1),f(lightDamage._2)),
+        darkDamage = (f(darkDamage._1),f(darkDamage._2))
+      )
     }
+  }
+  object Damage {
+    val empty = Damage((0,0),(0,0),(0,0),(0,0),(0,0))
   }
 }
 

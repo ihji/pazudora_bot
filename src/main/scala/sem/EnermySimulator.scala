@@ -24,11 +24,11 @@ class EnermySimulator(team: Team, damageMap: Map[UserMonster,Damage]) {
   }
   private def mapElement(e: Monster.Element, f: Double => Double)(d: Damage) : Damage = {
     e match {
-      case Monster.Fire => d.copy(fireDamage = f(d.fireDamage))
-      case Monster.Water => d.copy(waterDamage = f(d.waterDamage))
-      case Monster.Wood => d.copy(woodDamage = f(d.woodDamage))
-      case Monster.Light => d.copy(lightDamage = f(d.lightDamage))
-      case Monster.Dark => d.copy(darkDamage = f(d.darkDamage))
+      case Monster.Fire => d.copy(fireDamage = (f(d.fireDamage._1),f(d.fireDamage._2)))
+      case Monster.Water => d.copy(waterDamage = (f(d.waterDamage._1),f(d.waterDamage._2)))
+      case Monster.Wood => d.copy(woodDamage = (f(d.woodDamage._1),f(d.woodDamage._2)))
+      case Monster.Light => d.copy(lightDamage = (f(d.lightDamage._1),f(d.lightDamage._2)))
+      case Monster.Dark => d.copy(darkDamage = (f(d.darkDamage._1),f(d.darkDamage._2)))
     }
   }
   def modifyByElement(e: Enermy)(d: Damage) : Damage = {
