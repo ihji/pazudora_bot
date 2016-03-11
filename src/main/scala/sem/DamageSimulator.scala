@@ -53,7 +53,7 @@ class DamageSimulator(team: Team) {
         val twowayCount = mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk}
         val twoway = if(set.num == 4 && twowayCount != 0) Array.fill(twowayCount)(1.5).product else 1
         val finalMag = drop * dropEnh * twoway
-        def atk(base: Double) = Math.ceil(Math.ceil(base * drop * dropEnh) * twoway)
+        def atk(base: Double) = Math.round(Math.ceil(base * drop * dropEnh) * twoway).toDouble
 
         val bases =
           (mainAttr.toDrop == set.kind, subAttr.exists{_.toDrop == set.kind}) match {
@@ -185,18 +185,3 @@ object DamageSimulator {
     val empty = Damage((0,0),(0,0),(0,0),(0,0),(0,0))
   }
 }
-
-/*
-Input:
-/calc 2507+99, 2239, 2013+99, 2396+99, 893+1, 2507+99 = 어둠 1횡 각 2강화
-
-Correct result:
-각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 135,091
-요람의 저승신 페르세포네 체+0 공+0 회+0: 어둠 85,982
-각성 아누비스 체+0 공+99 회+0: 어둠 118,656
-각성 로키 체+0 공+99 회+0: 어둠 138,700
-단죄의 저승신 페르세포네 체+0 공+1 회+0: 어둠 97,234
-각성 신마왕 루시퍼 체+0 공+99 회+0: 어둠 135,091
-최대: 어둠 138,700
-종합: 어둠 710,754
- */
