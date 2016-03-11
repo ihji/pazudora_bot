@@ -57,8 +57,9 @@ class DamageSimulator(team: Team) {
             case Input.Heart => countAwokenSkills(team,Monster.HeartDropEn)
             case _ => 0
           }
-        val dropEnh = (1 + 0.06 * set.numEnhanced) * (1 + 0.05 * dropEnhanceCount)
-        val twoway = if(set.num == 4) mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk} * 1.5 else 1
+        val dropEnh = (1 + 0.06 * set.numEnhanced) * (if(set.numEnhanced != 0) 1 + 0.05 * dropEnhanceCount else 1)
+        val twowayCount = mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk}
+        val twoway = if(set.num == 4 && twowayCount != 0) Array.fill(twowayCount)(1.5).product else 1
         val finalMag = drop * coef * dropEnh * twoway
         val finalAtk = Math.ceil(Math.ceil(baseAtk * drop * coef * dropEnh) * twoway)
         println(s"$set 드롭배수 $drop 주부속 $coef 드롭강화배수 $dropEnh 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
@@ -92,11 +93,11 @@ class DamageSimulator(team: Team) {
     println(s"내리더 $leaderMag 친구리더 $friendMag")
     println(s"리더스킬 최종: $finalMag")
     d.copy(
-      fireDamage = Math.round(d.fireDamage * finalMag.fire),
-      waterDamage = Math.round(d.waterDamage * finalMag.water),
-      woodDamage = Math.round(d.woodDamage * finalMag.wood),
-      lightDamage = Math.round(d.lightDamage * finalMag.light),
-      darkDamage = Math.round(d.darkDamage * finalMag.dark)
+      fireDamage = Math.round(Math.round(d.fireDamage * leaderMag.fire) * friendMag.fire),
+      waterDamage = Math.round(Math.round(d.waterDamage * leaderMag.water) * friendMag.water),
+      woodDamage = Math.round(Math.round(d.woodDamage * leaderMag.wood) * friendMag.wood),
+      lightDamage = Math.round(Math.round(d.lightDamage * leaderMag.light) * friendMag.light),
+      darkDamage = Math.round(Math.round(d.darkDamage * leaderMag.dark) * friendMag.dark)
     )
   }
   private def equals(elem: Monster.Element, drop: Input.Drop) = {
