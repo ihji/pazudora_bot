@@ -21,8 +21,7 @@ class DamageSimulator(team: Team) {
         map + (mon -> finalDamage)
     }
   }
-  def getDamageString(input: Input) : String = {
-    val map = run(input)
+  def getDamageString(map: Map[UserMonster,Damage]) : String = {
     val buf = new StringBuffer
     val (totalDamage,maxDamage) = team.toSeq.foldLeft(Damage(0,0,0,0,0),Damage(0,0,0,0,0)){
       case ((total,max),m) =>

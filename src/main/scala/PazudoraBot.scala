@@ -1,7 +1,7 @@
 import data.Monster
 import db._
-import parser.{UserInputParser, TeamParser}
-import sem.DamageSimulator
+import parser.{EnermyParser, UserInputParser, TeamParser}
+import sem.{EnermySimulator, DamageSimulator}
 
 import scala.io.Source
 
@@ -54,17 +54,30 @@ object PazudoraBot extends TelegramBot(
   on("calc") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       val input = args.mkString(" ")
-      val splitted = input.split("=").map{_.trim}
-      if(splitted.length != 2) "잘못된 문법입니다."
+      val splitted = input.split("=|>").map{_.trim}
+      if(splitted.length != 2 && splitted.length != 3) "잘못된 문법입니다."
       else {
         TeamParser.parseTeam(splitted(0)) match {
           case Left(msg) => msg
           case Right(team) =>
             UserInputParser.parse(splitted(1)) match {
               case Left(msg) => msg
-              case Right(input) =>
-                println(team + "\n" + input)
-                new DamageSimulator(team).getDamageString(input)
+              case Right(inp) =>
+                println(team + "\n" + inp)
+                if(splitted.length == 2) {
+                  val sim = new DamageSimulator(team)
+                  val damageMap = sim.run(inp)
+                  sim.getDamageString(damageMap)
+                } else {
+                  EnermyParser.parse(splitted(2)) match {
+                    case Left(msg) => msg
+                    case Right(enermy) =>
+                      val sim = new DamageSimulator(team)
+                      val damageMap = sim.run(inp)
+                      val actualDamageMap = new EnermySimulator(team,damageMap).getActualDamageMap(enermy)
+                      sim.getDamageString(actualDamageMap)
+                  }
+                }
             }
         }
       }
@@ -72,7 +85,7 @@ object PazudoraBot extends TelegramBot(
   }
   on("ls") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, mon => s"${mon.getNameString} 리더스킬\n${mon.lSkill.map{x => s"한글설명: ${x.krDesc}\n영어설명: ${x.enDesc}\n해석결과: ${x.toString}"}.getOrElse("리더스킬 없음.")}")
+      output(args, mon => s"${mon.getNameString} 리더스킬\n${mon.lSkill.map{x => s"*한글설명*: ${x.krDesc}\n*영어설명*: ${x.enDesc}\n*해석결과*: ${x.toString}"}.getOrElse("리더스킬 없음.")}")
     }
   }
 }
