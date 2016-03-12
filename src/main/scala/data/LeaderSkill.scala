@@ -54,7 +54,8 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
       }
       val allSeq =
         (for(sd <- c.startDrops; ed <- c.endDrops; sq <- getAllNextSeq(makeCountSeq(sd), makeCountSeq(ed)).map{makeDropSeq}) yield sq) ++ c.startDrops
-      val magMap = ((allSeq.map{_.length}.min to allSeq.map{_.length}.max) zip (c.startMag to c.endMag by c.step)).toMap
+      val (minCombo, maxCombo) = (allSeq.map{_.length}.min, allSeq.map{_.length}.max)
+      val magMap = (minCombo to maxCombo).zipAll(c.startMag to c.endMag by c.step, maxCombo, c.endMag).toMap
       val combo = allSeq.filter{matched(input)}.map{_.length}
       if(combo.nonEmpty) Mag(magMap.getOrElse(combo.max,1.0))
       else Mag.identity
