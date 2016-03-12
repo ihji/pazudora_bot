@@ -9,6 +9,7 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
   var attrCond : Map[Monster.Element,Double] = Map.empty
   var typeCond : Map[Monster.Type,Double] = Map.empty
   var comboCond : Option[ComboCond] = None
+  var fixedComboCond : Option[FixedComboCond] = None
   var numberCond : Option[NumberCond] = None
   var fixedDropCond : Option[FixedDropCond] = None
   var flexDropCond : Option[FlexDropCond] = None
@@ -25,6 +26,38 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
         val comboMap = ((c.startCombo until c.endCombo) zip (c.startMag until c.endMag by c.step)).toMap
         Mag(comboMap.getOrElse(combo,1.0))
       }
+    }.getOrElse(Mag.identity)
+    val fixedComboMag = fixedComboCond.map{ c =>
+      def makeCountSeq(drop: Seq[Input.Drop]) : Seq[Int] =
+        Seq(drop.count(_ == Input.Fire), drop.count(_ == Input.Water), drop.count(_ == Input.Wood),
+            drop.count(_ == Input.Light), drop.count(_ == Input.Dark),
+            drop.count(_ == Input.Heart), drop.count(_ == Input.Jammer))
+      def makeDropSeq(count: Seq[Int]) : Seq[Input.Drop] =
+        Seq(
+          Array.fill(count(0))(Input.Fire).toSeq,Array.fill(count(1))(Input.Water).toSeq,Array.fill(count(2))(Input.Wood).toSeq,
+          Array.fill(count(3))(Input.Light).toSeq,Array.fill(count(4))(Input.Dark).toSeq,
+          Array.fill(count(5))(Input.Heart).toSeq,Array.fill(count(6))(Input.Jammer).toSeq
+        ).flatten
+      def getAllNextSeq(from: Seq[Int], to: Seq[Int]) : Seq[Seq[Int]] = {
+        to.zip(from).zipWithIndex.flatMap{
+          case ((x,y),idx) =>
+            if(x - y > 0) {
+              val next = from.updated(idx,y+1)
+              getAllNextSeq(next, to) :+ next
+            } else Seq()
+        }
+      }
+      def matched(x: Input)(y: Seq[Input.Drop]) : Boolean = {
+        x.combo.foldLeft(y){
+          case (m,c) => m diff Seq(c.kind)
+        }.isEmpty
+      }
+      val allSeq =
+        (for(sd <- c.startDrops; ed <- c.endDrops; sq <- getAllNextSeq(makeCountSeq(sd), makeCountSeq(ed)).map{makeDropSeq}) yield sq) ++ c.startDrops
+      val magMap = ((allSeq.map{_.length}.min to allSeq.map{_.length}.max) zip (c.startMag to c.endMag by c.step)).toMap
+      val combo = allSeq.filter{matched(input)}.map{_.length}
+      if(combo.nonEmpty) Mag(magMap.getOrElse(combo.max,1.0))
+      else Mag.identity
     }.getOrElse(Mag.identity)
     val numberMag = numberCond.map{ n =>
       val number = (input.combo.filter{x => n.drop(x.kind)}.map{_.num} :+ 0).max
@@ -60,9 +93,9 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
         }
       }
     }.getOrElse(Mag.identity)
-    println(s"리더스킬:\n속성배수 $attrMag\n타입배수 $typeMag\n콤보배수 $comboMag\n이어붙이기배수 $numberMag\n고정색배수 $fixedDropMag\n자유색배수 $flexDropMag\n강화드롭배수 $enhDropMag")
+    println(s"리더스킬:\n속성배수 $attrMag\n타입배수 $typeMag\n콤보배수 $comboMag\n이어붙이기배수 $numberMag\n고정색배수 $fixedDropMag\n자유색배수 $flexDropMag\n강화드롭배수 $enhDropMag\n고정콤보배수 $fixedComboMag")
     val noCondFinalMag = attrMag * typeMag
-    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag * enhDropMag
+    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag * enhDropMag * fixedComboMag
     Mags(noCondFinalMag,condFinalMag)
   }
 
@@ -78,6 +111,10 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
     }
     if(comboCond.nonEmpty) {
       buf.append(s"${comboCond.get.startCombo} 콤보 ${comboCond.get.startMag} 배 부터 ${comboCond.get.step} 배씩 증가하여 최대 ${comboCond.get.endCombo} 콤보 ${comboCond.get.endMag} 배.")
+      buf.append("\n")
+    }
+    if(fixedComboCond.nonEmpty) {
+      buf.append(s"${fixedComboCond.get.startDrops.map{_.mkString(",")}.mkString(" 또는 ")} 콤보에서 ${fixedComboCond.get.startMag} 배 부터 ${fixedComboCond.get.step} 배씩 증가하여 최대 ${fixedComboCond.get.endDrops.map{_.mkString(",")}.mkString(" 또는 ")} 콤보에서 ${fixedComboCond.get.endMag} 배.")
       buf.append("\n")
     }
     if(numberCond.nonEmpty) {
@@ -109,6 +146,16 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
   def addExtraComboCond(step: Double, endCombo: Int, endMag: Double) = {
     val combo = comboCond.getOrElse(ComboCond(endCombo,endMag,endCombo,endMag,step))
     comboCond = Some(combo.copy(endCombo = endCombo, endMag = endMag, step = step))
+    this
+  }
+  def addFixedComboCond(drops: Set[Seq[Input.Drop]], startMag: Double) = {
+    val fixedCombo = fixedComboCond.getOrElse(FixedComboCond(drops,drops,startMag,startMag,1))
+    fixedComboCond = Some(fixedCombo.copy(startDrops = drops, startMag = startMag))
+    this
+  }
+  def addExtraFixedComboCond(step: Double, endMag: Double, endDrops: Set[Seq[Input.Drop]]) = {
+    val fixedCombo = fixedComboCond.getOrElse(FixedComboCond(endDrops,endDrops,endMag,endMag,step))
+    fixedComboCond = Some(fixedCombo.copy(endDrops = endDrops, endMag = endMag, step = step))
     this
   }
   def addNumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double) = {
@@ -148,6 +195,7 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
 
 object LeaderSkill {
   case class ComboCond(startCombo: Int, startMag: Double, endCombo: Int, endMag: Double, step: Double)
+  case class FixedComboCond(startDrops: Set[Seq[Input.Drop]], endDrops: Set[Seq[Input.Drop]], startMag: Double, endMag: Double, step: Double)
   case class NumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double, endNumber: Int, endMag: Double, step: Double)
   case class FixedDropCond(drops: Set[Input.Drop], mag: Double)
   case class FlexDropCond(drops: Set[Input.Drop], startNum: Int, startMag: Double, endNum: Int, endMag: Double, step: Double)
