@@ -54,17 +54,16 @@ class DamageSimulator(team: Team) {
         val twowayCount = mon.mon.awokenSkill.count{_ == Monster.TwoWayAtk}
         val twoway = if(set.num == 4 && twowayCount != 0) Array.fill(twowayCount)(1.5).product else 1
         val finalMag = drop * dropEnh * twoway
-        def atk(base: Double) = Math.ceil(Math.ceil(base * drop * dropEnh) * twoway)
-
-        val bases =
+        def atk(base: Double) = {
+          val mainAtk = Math.ceil(Math.ceil(base * drop * dropEnh) * twoway)
           (mainAttr.toDrop == set.kind, subAttr.exists{_.toDrop == set.kind}) match {
-            case (true,true) => (baseAtk.toDouble, baseAtk * 0.1)
-            case (true,false) => (baseAtk.toDouble, 0.0)
-            case (false,true) => (0.0, baseAtk / 3.0)
+            case (true,true) => (mainAtk, Math.ceil(mainAtk * 0.1))
+            case (true,false) => (mainAtk, 0.0)
+            case (false,true) => (0.0, Math.ceil(mainAtk / 3.0))
             case (false,false) => (0.0, 0.0)
           }
-
-        val finalAtk = (atk(bases._1), atk(bases._2))
+        }
+        val finalAtk = atk(baseAtk)
         println(s"$set 드롭배수 $drop 드롭강화배수 $dropEnh 투웨이배수 $twoway 최종배수 $finalMag 최종공격력 $finalAtk")
         damage.add(set.kind,finalAtk)
     }
