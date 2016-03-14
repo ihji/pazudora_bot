@@ -130,6 +130,10 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
       buf.append(s"${flexDropCond.get.drops.mkString(",")} 중 ${flexDropCond.get.startNum} 개 동시 공격시 ${flexDropCond.get.startMag} 배 부터 ${flexDropCond.get.step} 배씩 증가하여 최대 ${flexDropCond.get.endNum} 개 ${flexDropCond.get.endMag} 배.")
       buf.append("\n")
     }
+    if(enhDropCond.nonEmpty) {
+      buf.append(s"강화드롭이 ${enhDropCond.get.enNum} 개 이상 포함된 ${enhDropCond.get.num} 개의 드롭을 지우면 해당 속성 ${enhDropCond.get.mag} 배")
+      buf.append("\n")
+    }
     buf.toString
   }
 
@@ -140,7 +144,7 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
     tys.foreach{ t => typeCond += (t -> mag) }; this
   }
   def addComboCond(startCombo: Int, startMag: Double) = {
-    val combo = comboCond.getOrElse(ComboCond(startCombo,startMag,startCombo,startMag,0))
+    val combo = comboCond.getOrElse(ComboCond(startCombo,startMag,startCombo,startMag,1))
     comboCond = Some(combo.copy(startCombo = startCombo, startMag = startMag))
     this
   }
@@ -160,7 +164,7 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
     this
   }
   def addNumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double) = {
-    val number = numberCond.getOrElse(NumberCond(drop, startNumber,startMag,startNumber,startMag,0))
+    val number = numberCond.getOrElse(NumberCond(drop, startNumber,startMag,startNumber,startMag,1))
     numberCond = Some(number.copy(drop = drop, startNumber = startNumber, startMag = startMag))
     this
   }
@@ -174,7 +178,7 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
     this
   }
   def addFlexDropCond(drops: Set[Input.Drop], startNum: Int, startMag: Double) = {
-    val drop = flexDropCond.getOrElse(FlexDropCond(drops, startNum, startMag, startNum, startMag, 0))
+    val drop = flexDropCond.getOrElse(FlexDropCond(drops, startNum, startMag, startNum, startMag, 1))
     flexDropCond = Some(drop.copy(drops = drops, startNum = startNum, startMag = startMag))
     this
   }

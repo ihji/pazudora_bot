@@ -8,6 +8,11 @@ case class UserMonster(mon: Monster, plusHp: Int = 0, plusAtk: Int = 0, plusRev:
   def getAtk = mon.atk._2 + plusAtk * 5
   def getRev = mon.rev._2 + plusRev * 3
   override def toString = {
-    s"${mon.krName} 체+$plusHp 공+$plusAtk 회+$plusRev"
+    val plus = Seq(
+      if(plusHp != 0) Some(s"체+$plusHp") else None,
+      if(plusAtk != 0) Some(s"공+$plusAtk") else None,
+      if(plusRev != 0) Some(s"회+$plusRev") else None
+    ).flatten.mkString(" ")
+    s"${mon.krName} $plus"
   }
 }
