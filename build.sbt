@@ -14,4 +14,8 @@ libraryDependencies += "com.twitter" %% "finagle-http" % "6.33.0"
 
 libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.2.1"
 
+publishArtifact in (Compile, packageDoc) := false
+
+publishArtifact in (Compile, packageSrc) := false
+
 enablePlugins(JavaAppPackaging)
