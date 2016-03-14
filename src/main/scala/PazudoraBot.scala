@@ -88,4 +88,11 @@ object PazudoraBot extends TelegramBot(
       output(args, mon => s"${mon.getNameString}\n${mon.lSkill.map{x => s"*리더스킬 한글*: ${x.krDesc}\n*리더스킬 영어*: ${x.enDesc}\n*리더스킬 해석*: ${x.toString}"}.getOrElse("리더스킬 없음.")}")
     }
   }
+  on("debug") { (sender, args) =>
+    replyTo(sender, parseMode = Some("Markdown")) {
+      val usedMemory = Math.ceil((Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / 1024.0 / 1024.0) + "MB"
+      val cachedSize = MonsterDB.cache.size
+      s"현재 메모리 사용량: $usedMemory\n현재 캐쉬된 몬스터수: $cachedSize"
+    }
+  }
 }
