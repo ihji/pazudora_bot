@@ -85,7 +85,7 @@ object PazudoraBot extends TelegramBot(
   }
   on("ls") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      output(args, mon => s"${mon.getNameString} 리더스킬\n${mon.lSkill.map{x => s"*한글설명*: ${x.krDesc}\n*영어설명*: ${x.enDesc}\n*해석결과*: ${x.toString}"}.getOrElse("리더스킬 없음.")}")
+      output(args, mon => s"${mon.getNameString}\n${mon.lSkill.map{x => s"*리더스킬 한글*: ${x.krDesc}\n*리더스킬 영어*: ${x.enDesc}\n*리더스킬 해석*: ${x.toString}"}.getOrElse("리더스킬 없음.")}")
     }
   }
 }

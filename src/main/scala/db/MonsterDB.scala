@@ -34,7 +34,7 @@ object MonsterDB extends TIGParser with PDXLeaderSkillParser {
           (Monster.toType(ts(0).dropRight(2)), None, None)
       }
     }
-    val star = rawName(4).drop(1).toInt
+    val star = if(rawName(4).length == 1) 1 else rawName(4).drop(1).toInt
 
     val rawElement = getElementsStringFromUS(id)
     val element = {
