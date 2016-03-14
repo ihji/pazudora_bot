@@ -20,7 +20,7 @@ trait PDXLeaderSkillParser extends PDXParser {
     fixedDropMag | flexDropMag | flexExtDropMag |
     numberMag | numberExtMag |
     enDropMag |
-    fixedComboMag | fixedExtraComboMag
+    fixedComboMag | fixedComboMag2 | fixedExtraComboMag
   )
 
   val comboMag : Parser[LeaderSkill => LeaderSkill] =
@@ -67,9 +67,16 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("All attribute cards"~atkMag~"when reaching"~drop.rep(sep=","|"&",min=1).rep(sep="or")~"combos").map{
       case (a,drops) => a.map{x => y : LeaderSkill => y.addFixedComboCond(drops.toSet,x)}.getOrElse(identity)
     }
+  val fixedComboMag2 : Parser[LeaderSkill => LeaderSkill] =
+    P("All attribute cards"~atkMag~"when reaching"~num~"set of"~drop~("combo"|"combos")).map{
+      case (a,n,d) => a.map{x => y : LeaderSkill => y.addFixedComboCond(Set((0 until n.toInt).map{_=>d}),x)}.getOrElse(identity)
+    }
   val fixedExtraComboMag : Parser[LeaderSkill => LeaderSkill] =
-    P(atkMag~"for each additional combo, up to"~atkMag~"when reaching"~drop.rep(sep=","|"&",min=1)~num.? ~"combos"~"combination".?).map{
-      case (step,a,drops,_) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraFixedComboCond(s,x,Set(drops))}}.getOrElse(identity)
+    P(atkMag~"for each additional combo, up to"~atkMag~"when reaching"~drop.rep(sep=","|"&",min=1).? ~num.? ~"combos"~"combination".?).map{
+      case (step,a,drops,num) =>
+        step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraFixedComboCond(s,x,
+          if(drops.nonEmpty) Left(Set(drops.get)) else if(num.nonEmpty) Right(num.get.toInt) else Left(Set())
+        )}}.getOrElse(identity)
     }
 
   val attrMag : Parser[LeaderSkill => LeaderSkill] =

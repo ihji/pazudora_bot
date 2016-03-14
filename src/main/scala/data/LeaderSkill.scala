@@ -158,9 +158,13 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
     fixedComboCond = Some(fixedCombo.copy(startDrops = drops, startMag = startMag))
     this
   }
-  def addExtraFixedComboCond(step: Double, endMag: Double, endDrops: Set[Seq[Input.Drop]]) = {
-    val fixedCombo = fixedComboCond.getOrElse(FixedComboCond(endDrops,endDrops,endMag,endMag,step))
-    fixedComboCond = Some(fixedCombo.copy(endDrops = endDrops, endMag = endMag, step = step))
+  def addExtraFixedComboCond(step: Double, endMag: Double, endDrops: Either[Set[Seq[Input.Drop]],Int]) = {
+    val fixedCombo = fixedComboCond.getOrElse(FixedComboCond(Set(),Set(),endMag,endMag,step))
+    val ed = endDrops match {
+      case Left(x) => if(x.isEmpty) fixedCombo.startDrops else x
+      case Right(num) => fixedCombo.startDrops.map{x => (0 until num).map{_ => x.head}}
+    }
+    fixedComboCond = Some(fixedCombo.copy(endDrops = ed.toSet, endMag = endMag, step = step))
     this
   }
   def addNumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double) = {
