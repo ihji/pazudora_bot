@@ -1,13 +1,14 @@
 package db
 
 import data.{Input, Monster, LeaderSkill}
+import db.web.PDXParser
 import fastparse.WhitespaceApi
 import fastparse.noApi._
 
 /**
   * Created by ihji on 3/7/16.
   */
-trait PDXLeaderSkillParser extends PDXParser {
+trait PDXLeaderSkillParser extends PDXParser { self: LeaderSkill =>
   val White = WhitespaceApi.Wrapper{
     import fastparse.all._
     NoTrace(" ".rep)
@@ -121,9 +122,8 @@ trait PDXLeaderSkillParser extends PDXParser {
     P("Jammer").map{_ => Input.Jammer}
   val num : Parser[Double] = P(CharIn('0' to '9', ".").repX(1).!).map{java.lang.Double.parseDouble}
 
-  def getLeaderSkill(monId: MonsterID, name: String, desc: String) : LeaderSkill = {
-    val d = getLSText(monId)
-    val lskill = d.split("\\. ").toSeq.foldLeft(new LeaderSkill(name,desc,d)){ case (l,d) =>
+  def genLeaderSkill() : LeaderSkill = {
+    enDesc.split("\\. ").toSeq.foldLeft(this){ case (l,d) =>
       val s = if(d.endsWith(".")) d.dropRight(1) else d
       statement.parse(s) match {
         case Result.Success(f,_) =>
@@ -133,6 +133,5 @@ trait PDXLeaderSkillParser extends PDXParser {
           l
       }
     }
-    lskill
   }
 }

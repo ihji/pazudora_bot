@@ -1,9 +1,10 @@
-package db
+package db.web
 
+import db.MonsterID
 import net.ruippeixotog.scalascraper.browser.Browser
-import org.jsoup.nodes.Document
-import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.dsl.DSL._
+import org.jsoup.nodes.Document
 
 /**
   * Created by heejong.lee on 2/23/16.

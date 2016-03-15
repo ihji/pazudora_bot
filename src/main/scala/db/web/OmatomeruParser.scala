@@ -1,9 +1,9 @@
-package db
+package db.web
 
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.RequestBuilder
 import com.twitter.util.Await
-import db.OmatomeruParser.GaChaResult
+import db.web.OmatomeruParser.GaChaResult
 import org.json4s.DefaultFormats
 import org.json4s.native.JsonMethods
 

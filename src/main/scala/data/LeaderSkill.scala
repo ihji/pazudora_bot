@@ -1,11 +1,12 @@
 package data
 
 import data.LeaderSkill._
+import db.PDXLeaderSkillParser
 
 /**
   * Created by heejong.lee on 3/7/16.
   */
-class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
+class LeaderSkill private(val name: String, val krDesc: String, val enDesc: String) extends PDXLeaderSkillParser {
   var attrCond : Map[Monster.Element,Double] = Map.empty
   var typeCond : Map[Monster.Type,Double] = Map.empty
   var comboCond : Option[ComboCond] = None
@@ -203,6 +204,9 @@ class LeaderSkill(val name: String, val krDesc: String, val enDesc: String) {
 }
 
 object LeaderSkill {
+  def apply(name: String, krDesc: String, enDesc: String) : LeaderSkill = {
+    new LeaderSkill(name,krDesc,enDesc).genLeaderSkill()
+  }
   case class ComboCond(startCombo: Int, startMag: Double, endCombo: Int, endMag: Double, step: Double)
   case class FixedComboCond(startDrops: Set[Seq[Input.Drop]], endDrops: Set[Seq[Input.Drop]], startMag: Double, endMag: Double, step: Double)
   case class NumberCond(drop: Set[Input.Drop], startNumber: Int, startMag: Double, endNumber: Int, endMag: Double, step: Double)

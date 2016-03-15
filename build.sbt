@@ -12,6 +12,10 @@ libraryDependencies += "com.twitter" %% "finagle-http" % "6.33.0"
 
 libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.2.1"
 
+libraryDependencies += "org.reactivemongo" %% "reactivemongo" % "0.11.10"
+
+libraryDependencies += "org.slf4j" % "slf4j-nop" % "1.7.19"
+
 publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false

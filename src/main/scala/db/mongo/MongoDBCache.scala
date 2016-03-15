@@ -1,0 +1,44 @@
+package db.mongo
+
+import data.Monster
+import db.{MonsterID, DatabaseBackend}
+import reactivemongo.api.{MongoConnection, MongoDriver}
+import reactivemongo.bson.BSONDocument
+
+import scala.concurrent.Await
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.Duration
+import scala.util.{Success, Failure}
+
+/**
+  * Created by heejong.lee on 3/15/16.
+  */
+trait MongoDBCache extends DatabaseBackend with MonsterMongoPickler {
+  val driver = new MongoDriver
+  val connection =
+    MongoConnection.parseURI(Option(System.getenv("OPENSHIFT_MONGODB_DB_URL")).
+      getOrElse("mongodb://localhost:27017")).map{driver.connection}.get
+  val db = connection("test")
+  val collection = db("pazudorabot")
+
+  override def getDBSize: Int = Await.result(collection.count(), Duration(3, "seconds"))
+  override def put(id: MonsterID, mon: Monster): Unit = {
+    collection.insert(mon).onComplete {
+      case Success(result) =>
+        println(s"monster ${mon.krName} is successfully cached in mongodb: $result")
+      case Failure(e) =>
+        println(s"failed to save ${mon.krName} in mongodb: ${e.getMessage}")
+    }
+  }
+  override def get(id: MonsterID): Option[Monster] = {
+    val query = BSONDocument("id" -> id.id)
+    val f = collection.find(query).cursor[Monster].collect[List]()
+    try {
+      Await.result(f,Duration(3, "seconds")).headOption
+    } catch {
+      case e: Throwable =>
+        println(s"exception thrown during mongodb find op: ${e.getMessage}")
+        None
+    }
+  }
+}

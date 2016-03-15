@@ -1,7 +1,8 @@
 package parser
 
 import data.{UserMonster, Team}
-import db.{TIGSearch, MonsterDB}
+import db.MonsterDB
+import db.web.TIGSearch
 
 /**
   * Created by ihji on 3/6/16.

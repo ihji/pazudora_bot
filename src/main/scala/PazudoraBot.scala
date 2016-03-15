@@ -1,5 +1,6 @@
 import data.Monster
 import db._
+import db.web.{TIGSearch, PDXParser, OmatomeruParser}
 import parser.{EnermyParser, UserInputParser, TeamParser}
 import sem.{EnermySimulator, DamageSimulator}
 
@@ -91,7 +92,7 @@ object PazudoraBot extends TelegramBot(
   on("debug") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       val usedMemory = Math.ceil((Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / 1024.0 / 1024.0) + "MB"
-      val cachedSize = MonsterDB.cache.size
+      val cachedSize = MonsterDB.getDBSize
       s"현재 메모리 사용량: $usedMemory\n현재 캐쉬된 몬스터수: $cachedSize"
     }
   }

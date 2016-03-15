@@ -1,8 +1,9 @@
-package db
+package db.web
 
+import db.MonsterID
 import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL._
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.dsl.DSL._
 
 /**
   * Created by heejong.lee on 3/9/16.
