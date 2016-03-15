@@ -95,4 +95,12 @@ object PazudoraBot extends TelegramBot(
       s"현재 메모리 사용량: $usedMemory\n현재 캐쉬된 몬스터수: $cachedSize"
     }
   }
+  on("version") { (sender, args) =>
+    replyTo(sender, parseMode = Some("Markdown")) {
+      import buildinfo.BuildInfo
+      "name: %s\nversion: %s\nscalaVersion: %s\nbuildTime: %s" format (
+        BuildInfo.name, BuildInfo.version, BuildInfo.scalaVersion, BuildInfo.builtAtString
+        )
+    }
+  }
 }

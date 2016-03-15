@@ -1,7 +1,5 @@
 name := "pazudora-bot"
 
-version := "0.9"
-
 scalaVersion := "2.11.7"
 
 libraryDependencies += "com.github.pengrad" % "java-telegram-bot-api" % "1.3.2"
@@ -17,5 +15,13 @@ libraryDependencies += "com.lihaoyi" %% "fastparse" % "0.2.1"
 publishArtifact in (Compile, packageDoc) := false
 
 publishArtifact in (Compile, packageSrc) := false
+
+enablePlugins(GitVersioning)
+
+git.useGitDescribe := true
+
+enablePlugins(BuildInfoPlugin)
+
+buildInfoOptions += BuildInfoOption.BuildTime
 
 enablePlugins(JavaAppPackaging)
