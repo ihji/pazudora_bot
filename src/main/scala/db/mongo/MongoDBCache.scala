@@ -14,7 +14,7 @@ import scala.util.{Success, Failure}
   * Created by heejong.lee on 3/15/16.
   */
 trait MongoDBCache extends DatabaseBackend with MonsterMongoPickler {
-  val (uri,dbName) = Option(System.getenv("OPENSHIFT_MONGODB_DB_URL")).map{x => (x+"pazudorabot","pazudorabot")}.getOrElse("mongodb://localhost:27017","test")
+  val (uri,dbName) = Option(System.getenv("MONGODB_URL")).map{x => (x+"pazudorabot","pazudorabot")}.getOrElse("mongodb://localhost:27017","test")
   val driver = new MongoDriver
   val connection = MongoConnection.parseURI(uri).map{driver.connection}.get
   val db = connection(dbName)
