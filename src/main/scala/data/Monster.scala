@@ -78,7 +78,7 @@ object Monster {
   case object Dragon extends Type { override def toString = "드래곤" }
   case object Machine extends Type { override def toString = "머신" }
   case object PowerUp extends Type { override def toString = "강화합성용" }
-  case object Evolution extends Type { override def toString = "진화소재" }
+  case object Evolution extends Type { override def toString = "진화용" }
   case object Awake extends Type { override def toString = "능력각성" }
   case object Point extends Type { override def toString = "매각용" }
 

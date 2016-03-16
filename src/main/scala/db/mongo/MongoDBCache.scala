@@ -5,7 +5,7 @@ import db.{MonsterID, DatabaseBackend}
 import reactivemongo.api.{MongoConnection, MongoDriver}
 import reactivemongo.bson.BSONDocument
 
-import scala.concurrent.Await
+import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.util.{Success, Failure}
@@ -22,7 +22,9 @@ trait MongoDBCache extends DatabaseBackend with MonsterMongoPickler {
 
   override def getDBSize: Int = Await.result(collection.count(), Duration(3, "seconds"))
   override def put(id: MonsterID, mon: Monster): Unit = {
-    collection.insert(mon).onComplete {
+    collection.remove(BSONDocument("id" -> id.id)).flatMap{ ret =>
+      if(ret.ok) collection.insert(mon) else Future.failed(new Exception(s"failed to remove ${mon.krName} from mongodb"))
+    }.onComplete {
       case Success(result) =>
         println(s"monster ${mon.krName} is successfully cached in mongodb: $result")
       case Failure(e) =>

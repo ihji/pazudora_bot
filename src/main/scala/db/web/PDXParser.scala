@@ -29,11 +29,19 @@ trait PDXParser {
     val elems = for(elem <- doc >?> elements("table#tablestat")) yield elem.flatMap{_ >?> texts("td")}
     val result = for(e <- elems; arr <- e.find{_.exists{_.contains("Leader Skill:")}}) yield {
       val idx = arr.toList.indexOf("Leader Skill:")
-      if(idx + 3 < arr.length) {
-        val lsText = arr(idx + 3)
-        println("leader skill in eng: " + lsText)
-        lsText
-      } else "리더스킬이 없습니다."
+      val lsText = {
+        val extract =
+          if(idx + 5 < arr.length) (arr(idx+2),arr(idx+3),arr(idx+4),arr(idx+5))
+          else if(idx + 3 < arr.length) (arr(idx+2),arr(idx+3),"","")
+          else ("","","","")
+        extract match {
+          case ("Effects:",ls1,"Effects:",ls2) => ls2
+          case ("Effects:",ls,_,_) => ls
+          case _ => "None."
+        }
+      }
+      println("leader skill in eng: " + lsText)
+      lsText
     }
     result.getOrElse("리더스킬 정보를 가지고 오지 못했습니다.")
   }

@@ -40,7 +40,7 @@ object EnermyParser {
     P("드래곤").map{_ => Monster.Dragon} |
     P("머신").map{_ => Monster.Machine} |
     P("강화합성용").map{_ => Monster.PowerUp} |
-    P("진화소재").map{_ => Monster.Evolution} |
+    P("진화용").map{_ => Monster.Evolution} |
     P("능력각성").map{_ => Monster.Awake} |
     P("매각용").map{_ => Monster.Point}
 
