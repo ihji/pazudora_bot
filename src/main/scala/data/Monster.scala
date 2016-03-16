@@ -1,6 +1,7 @@
 package data
 
 import data.Monster.{ActiveSkill, AwokenSkill, Element, Type}
+import sem.DamageSimulator.Damage
 
 /**
   * Created by ihji on 3/6/16.
@@ -44,7 +45,7 @@ case class Monster
     s"""*HP* ${hp._1} > ${hp._2} (${hp._2 - hp._1})
        |*공격* ${atk._1} > ${atk._2} (${atk._2 - atk._1})
        |*회복* ${rev._1} > ${rev._2} (${rev._2 - rev._1})
-       |*코스트* $cost *최대레벨* $maxLevel *총경험치* $maxExp *환산치* $rating
+       |*코스트* $cost *최대레벨* $maxLevel *총경험치* ${Damage.friendly(maxExp)} *환산치* $rating
        |*각성스킬* ${if(awokenSkill.isEmpty) "없음" else awokenSkill.mkString(", ")}
        |
        |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}

@@ -199,6 +199,7 @@ object DamageSimulator {
   }
   object Damage {
     val empty = Damage((0,0),(0,0),(0,0),(0,0),(0,0))
-    def friendly(d: Double) : String = java.text.NumberFormat.getIntegerInstance().format(d.toInt)
+    def friendly(d: Double) : String = friendly(d.toInt)
+    def friendly(i: Int) : String = java.text.NumberFormat.getIntegerInstance().format(i)
   }
 }

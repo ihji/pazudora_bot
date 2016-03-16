@@ -4,6 +4,7 @@ import com.pengrad.telegrambot.model.request.ParseMode
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   * Created by ihji on 3/3/16.
@@ -27,7 +28,9 @@ class TelegramBot(key: String) {
   }
   def run(): Unit = {
     while(true) {
-      val updates = bot.getUpdates(updateOffset, null, null).updates().asScala
+      val updates = Try(bot.getUpdates(updateOffset, null, null).updates().asScala).getOrElse{
+        println("error from getUpdates(), returning empty list"); Seq()
+      }
       for(update <- updates) {
         val text = Option(update.message().text()).getOrElse("")
         val param = makeParam(text)
