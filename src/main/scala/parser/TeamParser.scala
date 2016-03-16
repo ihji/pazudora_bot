@@ -2,12 +2,11 @@ package parser
 
 import data.{UserMonster, Team}
 import db.MonsterDB
-import db.web.TIGSearch
 
 /**
   * Created by ihji on 3/6/16.
   */
-object TeamParser extends TIGSearch {
+object TeamParser {
   val db = MonsterDB
   def parseTeam(team: String) : Either[String,Team] = {
     val t = team.split(",").toList.map{x => parseMonster(x.trim)}
@@ -27,17 +26,24 @@ object TeamParser extends TIGSearch {
   def parseMonster(name: String) : Either[String, UserMonster] = {
     if(name.contains("+")) {
       val pair = name.split('+').map{_.trim}
-      if(pair.length != 2) Left("알 수 없는 형식입니다: "+name)
+      if(pair.length != 2 && pair.length != 3) Left("알 수 없는 형식입니다: "+name)
       else {
-        val (name, plus) = (pair(0), pair(1))
+        val (name, plus) = pair.length match {
+          case 2 => pair(1) match {
+            case "kr" => (s"${pair(0)}+kr", "0")
+            case "jp" => (s"${pair(0)}+jp", "0")
+            case _ => (pair(0), pair(1))
+          }
+          case 3 => (s"${pair(0)}+${pair(1)}", pair(2))
+        }
         try {
-          nameOrId(name).left.map{ x => s"잘못된 입력입니다 ($name): $x" }.right.map{ x => UserMonster(db.getMonster(x)).copy(plusAtk = plus.toInt) }
+          db.searchMonster(name).left.map{ x => s"잘못된 입력입니다 ($name): $x" }.right.map{UserMonster(_,0,plus.toInt,0)}
         } catch {
           case e : NumberFormatException => Left("숫자가 아닙니다: "+plus)
         }
       }
     } else {
-      nameOrId(name).left.map{ x => s"잘못된 입력입니다 ($name): $x" }.right.map{db.getMonster _ andThen (UserMonster(_,0,0,0))}
+      db.searchMonster(name).left.map{ x => s"잘못된 입력입니다 ($name): $x" }.right.map{UserMonster(_,0,0,0)}
     }
   }
 }

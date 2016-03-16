@@ -52,7 +52,8 @@ trait MonsterMongoPickler {
       "ranking" -> t.ranking,
       "awokenSkill" -> t.awokenSkill.map{_.toString},
       "aSkill" -> t.aSkill,
-      "lSkill" -> t.lSkill
+      "lSkill" -> t.lSkill,
+      "volatile" -> t.volatile
     )
   }
   implicit object MonsterReader extends BSONDocumentReader[Monster] {
@@ -103,7 +104,8 @@ trait MonsterMongoPickler {
       bson.getAs[String]("ranking").get,
       bson.getAs[List[String]]("awokenSkill").get.map{Monster.toAwokenSkill},
       bson.getAs[Monster.ActiveSkill]("aSkill"),
-      bson.getAs[LeaderSkill]("lSkill")
+      bson.getAs[LeaderSkill]("lSkill"),
+      bson.getAs[Boolean]("volatile").getOrElse(false)
     )
   }
 }

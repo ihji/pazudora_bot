@@ -40,4 +40,15 @@ trait MongoDBCache extends DatabaseBackend with MonsterMongoPickler {
         None
     }
   }
+  override def get(name: String): Option[Monster] = {
+    val query = BSONDocument("krName" -> name)
+    val f = collection.find(query).cursor[Monster].collect[List]()
+    try {
+      Await.result(f,Duration(3, "seconds")).headOption
+    } catch {
+      case e: Throwable =>
+        println(s"exception thrown during mongodb find op: ${e.getMessage}")
+        None
+    }
+  }
 }

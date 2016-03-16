@@ -26,15 +26,16 @@ case class Monster
   ranking: String,
   awokenSkill: Seq[AwokenSkill],
   aSkill: Option[ActiveSkill],
-  lSkill: Option[LeaderSkill]
+  lSkill: Option[LeaderSkill],
+  volatile: Boolean
 ) {
   def getNameString = {
     s"""No.$id *$krName* $jpName ${ty._1+ty._2.map{"/"+_}.getOrElse("")+ty._3.map{"/"+_}.getOrElse("")} ★$star ${element._1+element._2.map{"/"+_}.getOrElse("")}"""
   }
   def getStatString = {
-    s"""*HP* ${hp._1} > ${hp._2} (${hp._2 - hp._1})
-       |*공격* ${atk._1} > ${atk._2} (${atk._2 - atk._1})
-       |*회복* ${rev._1} > ${rev._2} (${rev._2 - rev._1})
+    s"""*HP* ${hp._1} > ${hp._2} (+${hp._2 - hp._1})
+       |*공격* ${atk._1} > ${atk._2} (+${atk._2 - atk._1})
+       |*회복* ${rev._1} > ${rev._2} (+${rev._2 - rev._1})
        |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}
        |${if(aSkill.nonEmpty) aSkill.get.desc else "없음"}
        |*리더스킬* ${if(lSkill.nonEmpty) lSkill.get.name else ""}
@@ -42,9 +43,9 @@ case class Monster
      """.stripMargin
   }
   def getInfoString = {
-    s"""*HP* ${hp._1} > ${hp._2} (${hp._2 - hp._1})
-       |*공격* ${atk._1} > ${atk._2} (${atk._2 - atk._1})
-       |*회복* ${rev._1} > ${rev._2} (${rev._2 - rev._1})
+    s"""*HP* ${hp._1} > ${hp._2} (+${hp._2 - hp._1})
+       |*공격* ${atk._1} > ${atk._2} (+${atk._2 - atk._1})
+       |*회복* ${rev._1} > ${rev._2} (+${rev._2 - rev._1})
        |*코스트* $cost *최대레벨* $maxLevel *총경험치* ${Damage.friendly(maxExp)} *환산치* $rating
        |*각성스킬* ${if(awokenSkill.isEmpty) "없음" else awokenSkill.mkString(", ")}
        |

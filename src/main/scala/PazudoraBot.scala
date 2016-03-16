@@ -1,6 +1,6 @@
 import data.Monster
 import db._
-import db.web.{TIGSearch, PDXParser, OmatomeruParser}
+import db.web.{PDXParser, OmatomeruParser}
 import parser.{EnermyParser, UserInputParser, TeamParser}
 import sem.{EnermySimulator, DamageSimulator}
 
@@ -8,15 +8,13 @@ import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
-) with TIGSearch with OmatomeruParser with PDXParser {
+) with OmatomeruParser with PDXParser {
   val db = MonsterDB
   def output(args: Seq[String], format: Monster => String) : String = {
     if(args.nonEmpty) {
-      nameOrId(args.mkString(" ")) match {
+      db.searchMonster(args.mkString(" ")) match {
         case Left(str) => str
-        case Right(id) =>
-          val mon = db.getMonster(id)
-          format(mon)
+        case Right(mon) => format(mon)
       }
     } else {
       "몬스터 ID 나 이름을 입력해주세요."

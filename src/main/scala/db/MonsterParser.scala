@@ -80,6 +80,6 @@ trait MonsterParser extends TIGParser with PDXParser {
         Some(LeaderSkill(rawLSkill(1),rawLSkill(2),enDesc))
       }
 
-    Monster(idx,krName,jpName,thumbURL,picURL,ty,star,element,hp,atk,rev,cost,maxLevel,maxExp,rating,ranking,awoken,askill,lskill)
+    Monster(idx,krName,jpName,thumbURL,picURL,ty,star,element,hp,atk,rev,cost,maxLevel,maxExp,rating,ranking,awoken,askill,lskill,volatile = false)
   }
 }

@@ -9,4 +9,5 @@ trait DatabaseBackend {
   def getDBSize : Int
   def put(id: MonsterID, mon: Monster) : Unit
   def get(id: MonsterID) : Option[Monster]
+  def get(name: String) : Option[Monster]
 }
