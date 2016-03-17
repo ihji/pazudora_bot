@@ -17,7 +17,7 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
   var enhDropCond : Option[EnhDropCond] = None
 
   def getAtkMag(input: Input, team: Team, mon: Monster) : Mags = {
-    val teamElem = team.toSeq.flatMap{x => List(Some(x.mon.element._1.toDrop),x.mon.element._2.map{_.toDrop})}.flatten.toSet
+    val teamElem = team.toSeq.flatMap{x => List(Some(x.mon.element._1.toDrop),x.mon.element._2.map{_.toDrop})}.flatten.toSet ++ Set(Input.Heart, Input.Jammer)
     val attackingElem = input.combo.map{_.kind}.filter{teamElem}.toSet
     val attrMag = Mag(attrCond.getOrElse(mon.element._1,1.0) max mon.element._2.map{attrCond.getOrElse(_,1.0)}.getOrElse(1.0))
     val typeMag = Mag(typeCond.getOrElse(mon.ty._1,1.0) max mon.ty._2.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0) max mon.ty._3.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0))
