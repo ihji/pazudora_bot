@@ -22,13 +22,13 @@ case class Monster
   cost: Int,
   maxLevel: Int,
   maxExp: Int,
-  rating: Int,
   ranking: String,
   awokenSkill: Seq[AwokenSkill],
   aSkill: Option[ActiveSkill],
   lSkill: Option[LeaderSkill],
   volatile: Boolean
 ) {
+  val rating : Int = Math.round(hp._2 / 10.0 + atk._2 / 5.0 + rev._2 / 3.0).toInt
   def getNameString = {
     s"""No.$id *$krName* $jpName ${ty._1+ty._2.map{"/"+_}.getOrElse("")+ty._3.map{"/"+_}.getOrElse("")} ★$star ${element._1+element._2.map{"/"+_}.getOrElse("")}"""
   }

@@ -1,6 +1,6 @@
 name := "pazudora-bot"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 libraryDependencies += "com.github.pengrad" % "java-telegram-bot-api" % "1.3.2"
 
