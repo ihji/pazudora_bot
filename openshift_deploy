@@ -1,0 +1,21 @@
+#!/bin/bash
+
+ROOT_DIR=`dirname $0`
+
+# build
+$ROOT_DIR/sbt clean stage
+
+# preparing temp dir
+TMP_DIR=`mktemp -d`
+mkdir -p $TMP_DIR/repo/target
+
+# copying deployment contents
+cp -a $ROOT_DIR/.openshift $TMP_DIR/repo
+cp -a $ROOT_DIR/target/universal $TMP_DIR/repo/target
+
+# making a tarball
+rm -f $ROOT_DIR/openshift.tar.gz
+tar cvzf $ROOT_DIR/openshift.tar.gz -C $TMP_DIR .
+
+# remove temp dir
+rm -rf $TMP_DIR
