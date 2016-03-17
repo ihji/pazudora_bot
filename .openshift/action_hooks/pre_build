@@ -1,3 +1,5 @@
-cd $OPENSHIFT_REPO_DIR
+cd $OPENSHIFT_REPO_DIR/..
 
-ln -sf ../../../git/pazudorabot.git .git
+rm -rf repo
+
+git clone ../../git/pazudorabot.git repo
