@@ -17,6 +17,8 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
   var enhDropCond : Option[EnhDropCond] = None
 
   def getAtkMag(input: Input, team: Team, mon: Monster) : Mags = {
+    val teamElem = team.toSeq.flatMap{x => List(Some(x.mon.element._1.toDrop),x.mon.element._2.map{_.toDrop})}.flatten.toSet
+    val attackingElem = input.combo.map{_.kind}.filter{teamElem}.toSet
     val attrMag = Mag(attrCond.getOrElse(mon.element._1,1.0) max mon.element._2.map{attrCond.getOrElse(_,1.0)}.getOrElse(1.0))
     val typeMag = Mag(typeCond.getOrElse(mon.ty._1,1.0) max mon.ty._2.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0) max mon.ty._3.map{typeCond.getOrElse(_,1.0)}.getOrElse(1.0))
     val comboMag = comboCond.map{ c =>
@@ -71,16 +73,15 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
       }
     }.getOrElse(Mag.identity)
     val fixedDropMag = fixedDropCond.map{ f =>
-      if(f.drops.subsetOf(input.combo.map{_.kind}.toSet)) Mag(f.mag)
+      if(f.drops.subsetOf(attackingElem)) Mag(f.mag)
       else Mag.identity
     }.getOrElse(Mag.identity)
     val flexDropMag = flexDropCond.map{ f =>
-      val matchedSet = input.combo.map{_.kind}.toSet
-      val resultOpt = f.drops.subsets.filter{x => x.size >= f.startNum && x.size <= f.endNum}.find(_ == matchedSet)
+      val resultOpt = f.drops.subsets.filter{x => x.size >= f.startNum && x.size <= f.endNum}.find(_ == attackingElem)
       if(resultOpt.isEmpty) Mag.identity
       else {
         val numMap = ((f.startNum to f.endNum) zip (f.startMag to f.endMag by f.step)).toMap
-        Mag(numMap.getOrElse(matchedSet.size, 1.0))
+        Mag(numMap.getOrElse(attackingElem.size, 1.0))
       }
     }.getOrElse(Mag.identity)
     val enhDropMag = enhDropCond.flatMap{ e =>

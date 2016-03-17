@@ -1,0 +1,3 @@
+cd $OPENSHIFT_REPO_DIR
+
+ln -sf ../../../git/pazudorabot.git .git
