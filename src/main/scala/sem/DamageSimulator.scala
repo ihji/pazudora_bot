@@ -1,14 +1,14 @@
 package sem
 
-import data.LeaderSkill.{Mags, Mag}
-import data.{Monster, UserMonster, Input, Team}
+import data.LeaderSkill.AtkMags
+import data.{Input, Monster, Team, UserMonster}
 import sem.DamageSimulator.Damage
 
 /**
   * Created by heejong.lee on 3/9/16.
   */
 class DamageSimulator(team: Team) {
-  def run(input: Input): Map[UserMonster,Damage] = {
+  def calculateDamage(input: Input): Map[UserMonster,Damage] = {
     team.toSeq.foldLeft(Map.empty[UserMonster,Damage]) {
       case (map,mon) =>
         val baseDamage = Damage.empty
@@ -19,6 +19,20 @@ class DamageSimulator(team: Team) {
             multiplyLeaderSkill(input,team,mon)
         val finalDamage = damageEquation(baseDamage)
         map + (mon -> finalDamage)
+    }
+  }
+  def calculateHP : Int = {
+    val hpMagMain = team.leader.mon.lSkill.map{x => x.getHpMag(_)}.getOrElse({_: Monster => 1.0})
+    val hpMagFriend = team.friend.mon.lSkill.map{x => x.getHpMag(_)}.getOrElse({_: Monster => 1.0})
+    team.toSeq.foldLeft(0) {
+      case (h,m) => h + (m.getHp * hpMagMain(m.mon) * hpMagFriend(m.mon)).toInt
+    }
+  }
+  def calculateRev : Int = {
+    val revMagMain = team.leader.mon.lSkill.map{x => x.getRevMag(_)}.getOrElse({_: Monster => 1.0})
+    val revMagFriend = team.friend.mon.lSkill.map{x => x.getRevMag(_)}.getOrElse({_: Monster => 1.0})
+    team.toSeq.foldLeft(0) {
+      case (r,m) => r + (m.getRev * revMagMain(m.mon) * revMagFriend(m.mon)).toInt
     }
   }
   def getDamageString(map: Map[UserMonster,Damage]) : String = {
@@ -33,7 +47,7 @@ class DamageSimulator(team: Team) {
     buf.append(s"전체 ${Damage.friendly(totalDamage.sum)}")
     buf.toString
   }
-  def multiplyDrops(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
+  private def multiplyDrops(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
     val (mainAttr,subAttr) = mon.mon.element
     val baseAtk = mon.getAtk
     println(s"$mon ${mon.mon.element} 공격력 $baseAtk ")
@@ -68,12 +82,12 @@ class DamageSimulator(team: Team) {
         damage.add(set.kind,finalAtk)
     }
   }
-  def multiplyCombos(input: Input)(d: Damage) : Damage = {
+  private def multiplyCombos(input: Input)(d: Damage) : Damage = {
     val combo = 1 + 0.25*(input.combo.length - 1)
     println(s"콤보배수 $combo")
     d.map{x => Math.ceil(x * combo)}
   }
-  def multiplyRowEnhance(input: Input, team: Team)(d: Damage) : Damage = {
+  private def multiplyRowEnhance(input: Input, team: Team)(d: Damage) : Damage = {
     val fireRowEn = 1 + (countAwokenSkills(team, Monster.FireEn) * 0.1 * countRowDrop(input,Input.Fire))
     val waterRowEn = 1 + (countAwokenSkills(team, Monster.WaterEn) * 0.1 * countRowDrop(input,Input.Water))
     val woodRowEn = 1 + (countAwokenSkills(team, Monster.WoodEn) * 0.1 * countRowDrop(input,Input.Wood))
@@ -88,9 +102,9 @@ class DamageSimulator(team: Team) {
       darkDamage = (Math.round(d.darkDamage._1 * darkRowEn), Math.round(d.darkDamage._2 * darkRowEn))
     )
   }
-  def multiplyLeaderSkill(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
-    val leaderMag = team.leader.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(Mags.identity)
-    val friendMag = team.friend.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(Mags.identity)
+  private def multiplyLeaderSkill(input: Input, team: Team, mon: UserMonster)(d: Damage) : Damage = {
+    val leaderMag = team.leader.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(AtkMags.identity)
+    val friendMag = team.friend.mon.lSkill.map{_.getAtkMag(input,team,mon.mon)}.getOrElse(AtkMags.identity)
     val finalNoCondMag = leaderMag.noCond * friendMag.noCond
     val finalCondMag = leaderMag.cond * friendMag.cond
     println(s"기본배수 $finalNoCondMag 조건부배수 $finalCondMag")

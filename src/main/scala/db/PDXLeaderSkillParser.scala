@@ -26,73 +26,76 @@ trait PDXLeaderSkillParser extends PDXParser { self: LeaderSkill =>
 
   val comboMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"at"~num~"combos").map{
-      case (a,m) => a.map{x => y : LeaderSkill => y.addComboCond(m.toInt,x)}.getOrElse(identity)
+      case (a,m) => _.addAtkComboCond(m.toInt,a)
     }
   val comboExtMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"for each additional combo, up to"~atkMag~"at"~num~"combos").map{
-      case (step,a,m) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraComboCond(s,m.toInt,x)}}.getOrElse(identity)
+      case (step,a,m) => _.addAtkExtraComboCond(step,m.toInt,a)
     }
   val combo1 : Parser[LeaderSkill => LeaderSkill] =
     P("All attribute cards"~atkMag~"when reaching"~num~"combos or above").map{
-      case (a,m) => a.map{x => y : LeaderSkill => y.addComboCond(m.toInt,x)}.getOrElse(identity)
+      case (a,m) => _.addAtkComboCond(m.toInt,a)
     }
 
   val fixedDropMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"when attacking with"~drop.rep(sep=","|"&",min=1)~"orb types at the same time").map{
-      case (a,d) => a.map{x => y : LeaderSkill => y.addFixedDropCond(d.toSet,x)}.getOrElse(identity)
+      case (a,d) => _.addAtkFixedDropCond(d.toSet,a)
     }
   val flexDropMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"when attacking with"~num~"of following orb types:"~drop.rep(sep=","|"&",min=1)).map{
-      case (a,n,d) => a.map{x => y : LeaderSkill => y.addFlexDropCond(d.toSet,n.toInt,x)}.getOrElse(identity)
+      case (a,n,d) => _.addAtkFlexDropCond(d.toSet,n.toInt,a)
     }
   val flexExtDropMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"for each additional orb type, up to"~atkMag~"for all"~num~"matches").map{
-      case (step,a,n) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraFlexDropCond(n.toInt,x,s)}}.getOrElse(identity)
+      case (step,a,n) => _.addAtkExtraFlexDropCond(n.toInt,a,step)
     }
 
   val numberMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"when simultaneously clearing"~num~"connected"~drop.rep(sep="or",min=1)~"orbs").map{
-      case (a,n,d) => a.map{x => y : LeaderSkill => y.addNumberCond(d.toSet,n.toInt,x)}.getOrElse(identity)
+      case (a,n,d) => _.addAtkNumberCond(d.toSet,n.toInt,a)
     }
   val numberExtMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"for each additional orb, up to"~atkMag~"at"~num~"connected orb").map{
-      case (step,a,n) => step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraNumberCond(s,n.toInt,x)}}.getOrElse(identity)
+      case (step,a,n) => _.addAtkExtraNumberCond(step,n.toInt,a)
     }
 
   val enDropMag : Parser[LeaderSkill => LeaderSkill] =
     P("Matched attribute"~atkMag~"when matching exactly"~num~"connected orbs with at least"~num~"enhanced orb").map{
-      case (a,num,enNum) => a.map{x => y : LeaderSkill => y.addEnhDropCond(num.toInt, enNum.toInt, x)}.getOrElse(identity)
+      case (a,num,enNum) => _.addAtkEnhDropCond(num.toInt, enNum.toInt, a)
     }
 
   val fixedComboMag : Parser[LeaderSkill => LeaderSkill] =
     P("All attribute cards"~atkMag~"when reaching"~drop.rep(sep=","|"&",min=1).rep(sep="or")~"combos").map{
-      case (a,drops) => a.map{x => y : LeaderSkill => y.addFixedComboCond(drops.toSet,x)}.getOrElse(identity)
+      case (a,drops) => _.addAtkFixedComboCond(drops.toSet,a)
     }
   val fixedComboMag2 : Parser[LeaderSkill => LeaderSkill] =
     P("All attribute cards"~atkMag~"when reaching"~num~"set of"~drop~("combo"|"combos")).map{
-      case (a,n,d) => a.map{x => y : LeaderSkill => y.addFixedComboCond(Set((0 until n.toInt).map{_=>d}),x)}.getOrElse(identity)
+      case (a,n,d) => _.addAtkFixedComboCond(Set((0 until n.toInt).map{ _=>d}),a)
     }
   val fixedExtraComboMag : Parser[LeaderSkill => LeaderSkill] =
     P(atkMag~"for each additional combo, up to"~atkMag~"when reaching"~drop.rep(sep=","|"&",min=1).? ~num.? ~"combos"~"combination".?).map{
       case (step,a,drops,num) =>
-        step.flatMap{s => a.map{x => y : LeaderSkill => y.addExtraFixedComboCond(s,x,
-          if(drops.nonEmpty) Left(Set(drops.get)) else if(num.nonEmpty) Right(num.get.toInt) else Left(Set())
-        )}}.getOrElse(identity)
+        _.addAtkExtraFixedComboCond(step,a, if(drops.nonEmpty) Left(Set(drops.get)) else if(num.nonEmpty) Right(num.get.toInt) else Left(Set()))
     }
 
   val attrMag : Parser[LeaderSkill => LeaderSkill] =
-    P(attr.rep(sep=","|"&",min=1)~"attribute cards"~atkMag).map{
-      case (a,m) => m.map{x => y : LeaderSkill => y.addAttrCond(a.toSet,x)}.getOrElse(identity)
+    P(attr.rep(sep=","|"&",min=1)~"attribute cards"~statMag).map{
+      case (a,m) =>
+        m.get("ATK").map{x => y : LeaderSkill => y.addAtkAttrCond(a.toSet,x)}.getOrElse{x : LeaderSkill => x} andThen
+        m.get("HP").map{x => y : LeaderSkill => y.addHpAttrCond(a.toSet,x)}.getOrElse{x : LeaderSkill => x} andThen
+        m.get("RCV").map{x => y : LeaderSkill => y.addRevAttrCond(a.toSet,x)}.getOrElse{x : LeaderSkill => x}
     }
   val tyMag : Parser[LeaderSkill => LeaderSkill] =
-    P(ty.rep(sep=","|"&",min=1)~("type"|"attribute")~"cards"~atkMag).map{
-      case (t,m) => m.map{x => y : LeaderSkill => y.addTypeCond(t.toSet,x)}.getOrElse(identity)
+    P(ty.rep(sep=","|"&",min=1)~("type"|"attribute")~"cards"~statMag).map{
+      case (t,m) =>
+        m.get("ATK").map{x => y : LeaderSkill => y.addAtkTypeCond(t.toSet,x)}.getOrElse{x : LeaderSkill => x} andThen
+        m.get("HP").map{x => y : LeaderSkill => y.addHpTypeCond(t.toSet,x)}.getOrElse{x : LeaderSkill => x} andThen
+        m.get("RCV").map{x => y : LeaderSkill => y.addRevTypeCond(t.toSet,x)}.getOrElse{x : LeaderSkill => x}
     }
 
-  val atkMag : Parser[Option[Double]] =
-    P(("ATK" | "HP" | "RCV").! ~ "x" ~ num).rep(sep=",",min=1).map{
-      case ms => ms.find{_._1 == "ATK"}.map{_._2}
-    }
+  val atkMag : Parser[Double] = P("ATK" ~ "x" ~ num)
+  val statMag : Parser[Map[String,Double]] =
+    P(("ATK" | "HP" | "RCV").! ~ "x" ~ num).rep(sep=",",min=1).map{_.toMap}
   val ty : Parser[Monster.Type] =
     P("Devil").map{_ => Monster.Devil} |
     P("God").map{_ => Monster.God} |
