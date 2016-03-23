@@ -10,6 +10,7 @@ object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
 ) with PDXParser {
   val db = MonsterDB
+  var eggs = new RareEggs(Some(Monster.Fire),None,Set())
   def output(args: Seq[String], format: Monster => String) : String = {
     if(args.nonEmpty) {
       db.searchMonster(args.mkString(" ")) match {
@@ -47,7 +48,6 @@ object PazudoraBot extends TelegramBot(
   }
   on("roll") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      val eggs = new RareEggs(Some(Monster.Fire),None,Set())
       val id = eggs.pick()
       db.searchMonster(id.toString) match {
         case Left(str) => str

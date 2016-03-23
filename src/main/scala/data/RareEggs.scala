@@ -18,7 +18,8 @@ class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[MonsterKin
   val STAR4_PENALTY = 3
 
   val random = new Random(new Date().getTime())
-  def pick() : Int = {
+
+  val targets = {
     val carnivalMonsters = carnival.map{e => RareEggs.rareEggMonsters.filter{x => x.rarity == 5 && x.elem == e}}.getOrElse(Seq())
     val godFestMonsters = godFest.map{_.flatMap{k => RareEggs.rareEggMonsters.filter{_.kind == k}}}.getOrElse(Seq())
     val godFestLimiteds = if(godFest.nonEmpty) RareEggs.rareEggMonstersGodFestLimited.filterNot{x => excludeGodFestLimited(x.id)} else Seq()
@@ -31,12 +32,14 @@ class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[MonsterKin
     val allMonsters5 = allMonsters.filter{_.rarity == 5}
     val allMonsters4 = allMonsters.filter{_.rarity == 4}
 
-    val targets = allMonsters ++
+    allMonsters ++
       (1 until STAR5_PENALTY).flatMap{_ => allMonsters5} ++
       (1 until STAR4_PENALTY).flatMap{_ => allMonsters4}
+  }.map{_.id}
 
+  def pick() : Int = {
     val idx = random.nextInt(targets.length)
-    targets(idx).id
+    targets(idx)
   }
 }
 
