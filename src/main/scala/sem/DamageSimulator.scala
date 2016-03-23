@@ -25,14 +25,14 @@ class DamageSimulator(team: Team) {
     val hpMagMain = team.leader.mon.lSkill.map{x => x.getHpMag(_)}.getOrElse({_: Monster => 1.0})
     val hpMagFriend = team.friend.mon.lSkill.map{x => x.getHpMag(_)}.getOrElse({_: Monster => 1.0})
     team.toSeq.foldLeft(0) {
-      case (h,m) => h + (m.getHp * hpMagMain(m.mon) * hpMagFriend(m.mon)).toInt
+      case (h,m) => h + Math.round(m.getHp * hpMagMain(m.mon) * hpMagFriend(m.mon)).toInt
     }
   }
   def calculateRev : Int = {
     val revMagMain = team.leader.mon.lSkill.map{x => x.getRevMag(_)}.getOrElse({_: Monster => 1.0})
     val revMagFriend = team.friend.mon.lSkill.map{x => x.getRevMag(_)}.getOrElse({_: Monster => 1.0})
     team.toSeq.foldLeft(0) {
-      case (r,m) => r + (m.getRev * revMagMain(m.mon) * revMagFriend(m.mon)).toInt
+      case (r,m) => r + Math.round(m.getRev * revMagMain(m.mon) * revMagFriend(m.mon)).toInt
     }
   }
   def getDamageString(map: Map[UserMonster,Damage]) : String = {
