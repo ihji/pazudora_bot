@@ -42,6 +42,7 @@ class DamageSimulator(team: Team) {
         buf.append(s"*${m.toString}*: ${map(m).toString}\n")
         (total + map(m), max max map(m))
     }
+    buf.append("\n")
     buf.append(s"*최대*: ${maxDamage.toString(Math.max)}\n")
     buf.append(s"*종합*: ${totalDamage.toString(_+_)} ")
     buf.append(s"전체 ${Damage.friendly(totalDamage.sum)}")

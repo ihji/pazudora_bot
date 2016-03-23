@@ -74,13 +74,13 @@ object PazudoraBot extends TelegramBot(
                 val totalRev = sim.calculateRev
                 val damageMap = sim.calculateDamage(inp)
                 if(splitted.length == 2) {
-                  s"*팀 HP*: $totalHp *팀 회복* $totalRev\n" + sim.getDamageString(damageMap)
+                  s"*팀 HP* $totalHp *팀 회복* $totalRev\n\n" + sim.getDamageString(damageMap)
                 } else {
                   EnermyParser.parse(splitted(2)) match {
                     case Left(msg) => msg
                     case Right(enermy) =>
                       val actualDamageMap = new EnermySimulator(team,damageMap).getActualDamageMap(enermy)
-                      s"*팀 HP*: $totalHp *팀 회복* $totalRev\n" + sim.getDamageString(actualDamageMap)
+                      s"*팀 HP*: $totalHp *팀 회복* $totalRev\n\n" + sim.getDamageString(actualDamageMap)
                   }
                 }
             }
