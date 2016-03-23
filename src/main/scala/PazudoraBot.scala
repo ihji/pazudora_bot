@@ -1,14 +1,14 @@
-import data.Monster
+import data.{Monster, RareEggs}
 import db._
-import db.web.{PDXParser, OmatomeruParser}
-import parser.{EnermyParser, UserInputParser, TeamParser}
-import sem.{EnermySimulator, DamageSimulator}
+import db.web.PDXParser
+import parser.{EnermyParser, TeamParser, UserInputParser}
+import sem.{DamageSimulator, EnermySimulator}
 
 import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
-) with OmatomeruParser with PDXParser {
+) with PDXParser {
   val db = MonsterDB
   def output(args: Seq[String], format: Monster => String) : String = {
     if(args.nonEmpty) {
@@ -47,7 +47,13 @@ object PazudoraBot extends TelegramBot(
   }
   on("roll") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
-      getGacha()
+      val eggs = new RareEggs(Some(Monster.Fire),None,Set())
+      val id = eggs.pick()
+      db.searchMonster(id.toString) match {
+        case Left(str) => str
+        case Right(mon) =>
+          s"[${mon.getNameString}](${mon.picURL})"
+      }
     }
   }
   on("calc") { (sender, args) =>
@@ -90,7 +96,7 @@ object PazudoraBot extends TelegramBot(
   on("debug") { (sender, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       val usedMemory = Math.ceil((Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / 1024.0 / 1024.0) + "MB"
-      val cachedSize = MonsterDB.getDBSize
+      val cachedSize = db.getDBSize
       s"현재 메모리 사용량: $usedMemory\n현재 캐쉬된 몬스터수: $cachedSize"
     }
   }
