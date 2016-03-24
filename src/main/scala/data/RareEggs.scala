@@ -9,23 +9,24 @@ import scala.util.Random
 /**
   * Created by heejong.lee on 3/22/16.
   */
-class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[MonsterKind]], excludeGodFestLimited: Set[Int]) {
-  val CARNIVAL_BENEFIT = 3
-  val GODFEST_LIMITED_BENEFIT = 3
-  val GODFEST_BENEFIT = 3
+case class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[MonsterKind]], excludeGodFestLimited: Set[Int]) {
+  var CARNIVAL_BENEFIT = 3
+  var GODFEST_LIMITED_BENEFIT = 3
+  var GODFEST_BENEFIT = 3
 
   val STAR5_PENALTY = 2
   val STAR4_PENALTY = 3
 
   val random = new Random(new Date().getTime())
 
-  val targets = {
+  lazy val targets = {
     val carnivalMonsters = carnival.map{e => RareEggs.rareEggMonsters.filter{x => x.rarity == 5 && x.elem == e}}.getOrElse(Seq())
+    val carnivalLimited = carnival.map{e => RareEggs.rareEggMonstersCarnivalLimited.filter{x => x.rarity == 5 && x.elem == e}}.getOrElse(Seq())
     val godFestMonsters = godFest.map{_.flatMap{k => RareEggs.rareEggMonsters.filter{_.kind == k}}}.getOrElse(Seq())
     val godFestLimiteds = if(godFest.nonEmpty) RareEggs.rareEggMonstersGodFestLimited.filterNot{x => excludeGodFestLimited(x.id)} else Seq()
 
-    val allMonsters = RareEggs.rareEggMonsters ++ godFestLimiteds ++
-      (1 until CARNIVAL_BENEFIT).flatMap{_ => carnivalMonsters} ++
+    val allMonsters = RareEggs.rareEggMonsters ++ godFestLimiteds ++ carnivalLimited ++
+      (1 until CARNIVAL_BENEFIT).flatMap{_ => carnivalMonsters ++ carnivalLimited} ++
       (1 until GODFEST_LIMITED_BENEFIT).flatMap{_ => godFestLimiteds} ++
       (1 until GODFEST_BENEFIT).flatMap{_ => godFestMonsters}
 
@@ -45,6 +46,14 @@ class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[MonsterKin
 
 object RareEggs {
   case class Egg(id: Int, rarity: Int, elem: Monster.Element, kind: MonsterKind)
+
+  val rareEggMonstersCarnivalLimited = Seq(
+    Egg(2665, 5, Monster.Fire, CarnivalLimited),
+    Egg(2667, 5, Monster.Water, CarnivalLimited),
+    Egg(2669, 5, Monster.Wood, CarnivalLimited),
+    Egg(2671, 5, Monster.Light, CarnivalLimited),
+    Egg(2673, 5, Monster.Dark, CarnivalLimited)
+  )
 
   val rareEggMonstersGodFestLimited = Seq(
     Egg(362, 5, Monster.Wood, GodFestLimited), // 녹딘
@@ -97,12 +106,6 @@ object RareEggs {
     Egg(564, 6, Monster.Dark, Ninjas),
     Egg(1243, 6, Monster.Fire, Expelleds), // 불관우
     Egg(1374, 6, Monster.Light, Expelleds), // 빛갈량
-
-    Egg(2665, 5, Monster.Fire, CarnivalLimited),
-    Egg(2667, 5, Monster.Water, CarnivalLimited),
-    Egg(2669, 5, Monster.Wood, CarnivalLimited),
-    Egg(2671, 5, Monster.Light, CarnivalLimited),
-    Egg(2673, 5, Monster.Dark, CarnivalLimited),
 
     Egg(2552, 5, Monster.Fire, Constellations2),
     Egg(2554, 5, Monster.Water, Constellations2),
@@ -363,6 +366,32 @@ object RareEggs {
     Egg(356, 4, Monster.Wood, Elementals),
     Egg(358, 4, Monster.Light, Elementals),
     Egg(360, 4, Monster.Dark, Elementals)
+  )
+
+  def str2GodFestTargets(str: String) : Option[MonsterKind] = {
+    val idx = godFestTargets.map{_.toString}.indexOf(str)
+    if(idx == -1) None else Some(godFestTargets(idx))
+  }
+
+  val godFestTargets = Seq(
+    Constellations2,
+    Constellations,
+    Generals,
+    Angels2,
+    Angels,
+    IndianGods2,
+    ThreeKingdomGods,
+    HeroGods,
+    GreekRomanGods,
+    JapaneseGods,
+    IndianGods,
+    NorthernEuropeGods,
+    EgyptianGods,
+    EgyptianGods2,
+    GreekGods,
+    Devils,
+    ChineseGods,
+    JapaneseGods2
   )
 
   sealed trait MonsterKind

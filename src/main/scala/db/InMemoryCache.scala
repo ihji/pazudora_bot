@@ -11,4 +11,5 @@ trait InMemoryCache extends DatabaseBackend {
   override def put(id: MonsterID, mon: Monster): Unit = cache += id -> mon
   override def get(id: MonsterID): Option[Monster] = cache.get(id)
   override def get(name: String): Option[Monster] = cache.find{_._2.krName.contains(name)}.map{_._2}
+  override def clearMonsterCache(id: Option[Int]): Unit = if(id.nonEmpty) cache = cache.filterNot{_._1.id == id.get} else cache = Map.empty
 }

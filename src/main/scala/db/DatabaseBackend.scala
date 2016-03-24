@@ -10,4 +10,5 @@ trait DatabaseBackend {
   def put(id: MonsterID, mon: Monster) : Unit
   def get(id: MonsterID) : Option[Monster]
   def get(name: String) : Option[Monster]
+  def clearMonsterCache(id: Option[Int]) : Unit
 }

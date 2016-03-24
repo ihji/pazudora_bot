@@ -11,10 +11,10 @@ import scala.util.Try
   */
 class TelegramBot(key: String) {
   val bot = TelegramBotAdapter.build(key)
-  var actions : Map[String,(String,Seq[String]) => Future[Unit]] = Map.empty
+  var actions : Map[String,(String,(String,Seq[String]) => Future[Unit])] = Map.empty
   var updateOffset : Int = 0
-  def on(cmd: String)(handler: (String,Seq[String]) => Future[Unit]): Unit = {
-    actions += cmd -> handler
+  def on(cmd: String, desc: String)(handler: (String,Seq[String]) => Future[Unit]): Unit = {
+    actions += cmd -> (desc, handler)
   }
   def replyTo(chatId: String, parseMode: Option[String] = None)(msg: => String): Future[Unit] = {
     val pm = parseMode match {
@@ -38,7 +38,7 @@ class TelegramBot(key: String) {
           val chatId = update.message().chat().id()
           val (cmd, args) = param.get
           actions.get(cmd) match {
-            case Some(handler) => handler(chatId.toString, args)
+            case Some((_,handler)) => handler(chatId.toString, args)
             case None =>
           }
         }

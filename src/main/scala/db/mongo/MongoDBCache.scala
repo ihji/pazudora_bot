@@ -21,6 +21,11 @@ trait MongoDBCache extends DatabaseBackend with MonsterMongoPickler {
   val collection = db("pazudorabot")
 
   override def getDBSize: Int = Await.result(collection.count(), Duration(3, "seconds"))
+  override def clearMonsterCache(id: Option[Int]) {
+    if(id.nonEmpty) {
+      collection.remove(BSONDocument("id" -> id))
+    } else collection.drop()
+  }
   override def put(id: MonsterID, mon: Monster): Unit = {
     collection.remove(BSONDocument("id" -> id.id)).flatMap{ ret =>
       if(ret.ok) collection.insert(mon) else Future.failed(new Exception(s"failed to remove ${mon.krName} from mongodb"))
