@@ -25,11 +25,14 @@ case class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[Monst
     val godFestMonsters = godFest.map{_.flatMap{k => RareEggs.rareEggMonsters.filter{_.kind == k}}}.getOrElse(Seq())
     val godFestLimiteds = if(godFest.nonEmpty) RareEggs.rareEggMonstersGodFestLimited.filterNot{x => excludeGodFestLimited(x.id)} else Seq()
 
-    val allMonsters = RareEggs.rareEggMonsters ++ godFestLimiteds ++ carnivalLimited ++
+    val duplicatedMonsters = carnivalMonsters intersect godFestMonsters
+
+    val allMonsters =
+      (RareEggs.rareEggMonsters ++ godFestLimiteds ++ carnivalLimited ++
       (1 until CARNIVAL_BENEFIT).flatMap{_ => carnivalMonsters ++ carnivalLimited} ++
       (1 until GODFEST_LIMITED_BENEFIT).flatMap{_ => godFestLimiteds} ++
-      (1 until GODFEST_BENEFIT).flatMap{_ => godFestMonsters}
-
+      (1 until GODFEST_BENEFIT).flatMap{_ => godFestMonsters}) diff
+      (1 until (CARNIVAL_BENEFIT min GODFEST_BENEFIT)).flatMap{_ => duplicatedMonsters}
     val allMonsters5 = allMonsters.filter{_.rarity == 5}
     val allMonsters4 = allMonsters.filter{_.rarity == 4}
 

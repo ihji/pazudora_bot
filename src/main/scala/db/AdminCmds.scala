@@ -37,6 +37,27 @@ trait AdminCmds {
         case "dica" =>
           eggs = disableCarnival(eggs)
           "카니발이 제거 되었습니다."
+        case "gfbe" =>
+          setGodFestBenefit(eggs, param) match {
+            case Left(x) => x
+            case Right(e) =>
+              eggs = e
+              "갓페 대상신 배율이 수정되었습니다."
+          }
+        case "glbe" =>
+          setGodFestLimitedBenefit(eggs, param) match {
+            case Left(x) => x
+            case Right(e) =>
+              eggs = e
+              "갓페 한정신 배율이 수정되었습니다."
+          }
+        case "cabe" =>
+          setCarnivalBenefit(eggs, param) match {
+            case Left(x) => x
+            case Right(e) =>
+              eggs = e
+              "카니발 대상 배율이 수정되었습니다."
+          }
         case "rset" => rollSetting(eggs)
         case "clcc" => clearCache(param)
         case _ =>
@@ -45,6 +66,9 @@ trait AdminCmds {
             |digf : disable god fest event
             |enca : enable carnival event
             |dica : disable carnival event
+            |gfbe : set god fest benefit
+            |glbe : set god fest limited benefit
+            |cabe : set carnival benefit
             |rset : print roll setting
             |clcc : clear monster cache
           """.stripMargin
@@ -52,6 +76,30 @@ trait AdminCmds {
     } else "어드민 키가 맞지 않습니다."
   }
 
+  private def setGodFestBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
+    Try(args.toInt) match {
+      case Success(x) =>
+        egg.GODFEST_BENEFIT = x
+        Right(egg)
+      case Failure(_) => Left("숫자가 아닙니다.")
+    }
+  }
+  private def setGodFestLimitedBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
+    Try(args.toInt) match {
+      case Success(x) =>
+        egg.GODFEST_LIMITED_BENEFIT = x
+        Right(egg)
+      case Failure(_) => Left("숫자가 아닙니다.")
+    }
+  }
+  private def setCarnivalBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
+    Try(args.toInt) match {
+      case Success(x) =>
+        egg.CARNIVAL_BENEFIT = x
+        Right(egg)
+      case Failure(_) => Left("숫자가 아닙니다.")
+    }
+  }
   private def enableGodFest(egg: RareEggs, args: String) : Either[String,RareEggs] = {
     def applyTargets(e: RareEggs, targets: String, exceptions: Option[String]) : Either[String,RareEggs] = {
       def targetApplied(e: RareEggs) = {
