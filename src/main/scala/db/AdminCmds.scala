@@ -79,24 +79,21 @@ trait AdminCmds {
   private def setGodFestBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
     Try(args.toInt) match {
       case Success(x) =>
-        egg.GODFEST_BENEFIT = x
-        Right(egg)
+        Right(egg.copy(GODFEST_BENEFIT = x))
       case Failure(_) => Left("숫자가 아닙니다.")
     }
   }
   private def setGodFestLimitedBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
     Try(args.toInt) match {
       case Success(x) =>
-        egg.GODFEST_LIMITED_BENEFIT = x
-        Right(egg)
+        Right(egg.copy(GODFEST_LIMITED_BENEFIT = x))
       case Failure(_) => Left("숫자가 아닙니다.")
     }
   }
   private def setCarnivalBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
     Try(args.toInt) match {
       case Success(x) =>
-        egg.CARNIVAL_BENEFIT = x
-        Right(egg)
+        Right(egg.copy(CARNIVAL_BENEFIT = x))
       case Failure(_) => Left("숫자가 아닙니다.")
     }
   }

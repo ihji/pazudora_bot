@@ -9,11 +9,12 @@ import scala.util.Random
 /**
   * Created by heejong.lee on 3/22/16.
   */
-case class RareEggs(carnival: Option[Monster.Element], godFest: Option[Seq[MonsterKind]], excludeGodFestLimited: Set[Int]) {
-  var CARNIVAL_BENEFIT = 3
-  var GODFEST_LIMITED_BENEFIT = 3
-  var GODFEST_BENEFIT = 3
-
+case class RareEggs(carnival: Option[Monster.Element],
+                    godFest: Option[Seq[MonsterKind]],
+                    excludeGodFestLimited: Set[Int],
+                    CARNIVAL_BENEFIT: Int = 3,
+                    GODFEST_LIMITED_BENEFIT: Int = 3,
+                    GODFEST_BENEFIT: Int = 3) {
   val STAR5_PENALTY = 2
   val STAR4_PENALTY = 3
 
