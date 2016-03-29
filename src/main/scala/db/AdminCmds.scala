@@ -15,7 +15,7 @@ trait AdminCmds {
   def handleAdminCmds(args: Seq[String]) = {
     if(args.headOption.contains(adminKey)) {
       val cmd = if(args.length >= 2) args(1) else ""
-      val param = if(args.length >= 3) args(2) else ""
+      val param = if(args.length >= 3) args.drop(2).mkString(" ") else ""
       cmd match {
         case "engf" =>
           enableGodFest(eggs, param) match {
