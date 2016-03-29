@@ -15,6 +15,7 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
   var atkFixedDropCond : Option[AtkFixedDropCond] = None
   var atkFlexDropCond : Option[AtkFlexDropCond] = None
   var atkEnhDropCond : Option[AtkEnhDropCond] = None
+  var atkHpCond : Option[AtkHpCond] = None
 
   var hpAttrCond : Map[Monster.Element,Double] = Map.empty
   var revAttrCond : Map[Monster.Element,Double] = Map.empty
@@ -112,9 +113,14 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
         }
       }
     }.getOrElse(AtkMag.identity)
-    println(s"리더스킬:\n속성배수 $attrMag\n타입배수 $typeMag\n콤보배수 $comboMag\n이어붙이기배수 $numberMag\n고정색배수 $fixedDropMag\n자유색배수 $flexDropMag\n강화드롭배수 $enhDropMag\n고정콤보배수 $fixedComboMag")
+    val hpCondMag = atkHpCond.map{ c =>
+      val elemMag = (c.lessThan.map{_._2} ++ c.moreThan.map{_._2} ++ Seq(1.0)).max
+      val mag = if(Set(Some(mon.element._1), mon.element._2).flatten intersect c.elem nonEmpty) elemMag else 1.0
+      AtkMag(mag)
+    }.getOrElse(AtkMag.identity)
+    println(s"리더스킬:\n속성배수 $attrMag\n타입배수 $typeMag\n콤보배수 $comboMag\n이어붙이기배수 $numberMag\n고정색배수 $fixedDropMag\n자유색배수 $flexDropMag\n강화드롭배수 $enhDropMag\n고정콤보배수 $fixedComboMag\n체력배수 $hpCondMag")
     val noCondFinalMag = attrMag * typeMag
-    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag * enhDropMag * fixedComboMag
+    val condFinalMag = comboMag * numberMag * fixedDropMag * flexDropMag * enhDropMag * fixedComboMag * hpCondMag
     AtkMags(noCondFinalMag,condFinalMag)
   }
 
@@ -167,6 +173,16 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
     if(atkEnhDropCond.nonEmpty) {
       buf.append(s"강화드롭이 ${atkEnhDropCond.get.enNum} 개 이상 포함된 ${atkEnhDropCond.get.num} 개의 드롭을 지우면 해당 속성 ${atkEnhDropCond.get.mag} 배")
       buf.append("\n")
+    }
+    if(atkHpCond.nonEmpty) {
+      atkHpCond.get.lessThan.foreach { c =>
+        buf.append(s"HP가 ${c._1} 미만일때 ${atkHpCond.get.elem.mkString(",")} 속성 ${c._2} 배")
+        buf.append("\n")
+      }
+      atkHpCond.get.moreThan.foreach { c =>
+        buf.append(s"HP가 ${c._1} 이상일때 ${atkHpCond.get.elem.mkString(",")} 속성 ${c._2} 배")
+        buf.append("\n")
+      }
     }
     buf.toString
   }
@@ -225,6 +241,16 @@ class LeaderSkill private(val name: String, val krDesc: String, val enDesc: Stri
     atkEnhDropCond = Some(enh.copy(num = num, enNum = enNum, mag = mag))
     this
   }
+  def addAtkHpCondLessThan(elem: Option[Set[Monster.Element]], boundary: Int, mag: Double) = {
+    val hpc = atkHpCond.getOrElse(AtkHpCond(Set(), Seq(),Seq()))
+    atkHpCond = Some(hpc.copy(elem = elem.getOrElse(hpc.elem), lessThan = hpc.lessThan :+ (boundary,mag)))
+    this
+  }
+  def addAtkHpCondMoreThan(elem: Option[Set[Monster.Element]], boundary: Int, mag: Double) = {
+    val hpc = atkHpCond.getOrElse(AtkHpCond(Set(), Seq(),Seq()))
+    atkHpCond = Some(hpc.copy(elem = elem.getOrElse(hpc.elem), moreThan = hpc.moreThan :+ (boundary,mag)))
+    this
+  }
   def addAtkExtraFlexDropCond(endNum: Int, endMag: Double, step: Double) = {
     val initDrops =
       if(endNum == 5) Set[Input.Drop](Input.Fire, Input.Water, Input.Wood, Input.Light, Input.Dark)
@@ -258,6 +284,7 @@ object LeaderSkill {
   case class AtkFixedDropCond(drops: Set[Input.Drop], mag: Double)
   case class AtkFlexDropCond(drops: Set[Input.Drop], startNum: Int, startMag: Double, endNum: Int, endMag: Double, step: Double)
   case class AtkEnhDropCond(num: Int, enNum: Int, mag: Double)
+  case class AtkHpCond(elem: Set[Monster.Element], lessThan: Seq[(Int,Double)], moreThan: Seq[(Int,Double)])
   case class AtkMag(fire: Double, water: Double, wood: Double, light: Double, dark: Double) {
     override def toString = s"불 ${fire}배 물 ${water}배 나무 ${wood}배 빛 ${light}배 어둠 ${dark}배"
     def *(other: AtkMag) : AtkMag = AtkMag(fire*other.fire,water*other.water,wood*other.wood,light*other.light,dark*other.dark)

@@ -11,9 +11,9 @@ import scala.util.Try
   */
 class TelegramBot(key: String) {
   val bot = TelegramBotAdapter.build(key)
-  var actions : Map[String,(String,(String,Seq[String]) => Future[Unit])] = Map.empty
+  var actions : Map[String,(String,(String,Option[Int],Seq[String]) => Future[Unit])] = Map.empty
   var updateOffset : Int = 0
-  def on(cmd: String, desc: String)(handler: (String,Seq[String]) => Future[Unit]): Unit = {
+  def on(cmd: String, desc: String)(handler: (String,Option[Int],Seq[String]) => Future[Unit]): Unit = {
     actions += cmd -> (desc, handler)
   }
   def replyTo(chatId: String, parseMode: Option[String] = None)(msg: => String): Future[Unit] = {
@@ -32,13 +32,14 @@ class TelegramBot(key: String) {
         println("error from getUpdates(), returning empty list"); Seq()
       }
       for(update <- updates) {
+        val user = Option(update.message().from()).map{_.id().toInt}
         val text = Option(update.message().text()).getOrElse("")
         val param = makeParam(text)
         if(param.nonEmpty) {
           val chatId = update.message().chat().id()
           val (cmd, args) = param.get
           actions.get(cmd) match {
-            case Some((_,handler)) => handler(chatId.toString, args)
+            case Some((_,handler)) => handler(chatId.toString, user, args)
             case None =>
           }
         }

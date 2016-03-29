@@ -16,12 +16,13 @@ trait PDXLeaderSkillParser extends PDXParser { self: LeaderSkill =>
   import White._
 
   val statement : Parser[LeaderSkill => LeaderSkill] = P(
-    attrMag | tyMag |
     comboMag | comboExtMag | combo1 |
     fixedDropMag | flexDropMag | flexExtDropMag |
     numberMag | numberExtMag |
     enDropMag |
-    fixedComboMag | fixedComboMag2 | fixedExtraComboMag
+    hpCondLtMag | hpCondGtMag | hpCondFullMag |
+    fixedComboMag | fixedComboMag2 | fixedExtraComboMag |
+    attrMag | tyMag
   )
 
   val comboMag : Parser[LeaderSkill => LeaderSkill] =
@@ -62,6 +63,19 @@ trait PDXLeaderSkillParser extends PDXParser { self: LeaderSkill =>
   val enDropMag : Parser[LeaderSkill => LeaderSkill] =
     P("Matched attribute"~atkMag~"when matching exactly"~num~"connected orbs with at least"~num~"enhanced orb").map{
       case (a,num,enNum) => _.addAtkEnhDropCond(num.toInt, enNum.toInt, a)
+    }
+
+  val hpCondGtMag : Parser[LeaderSkill => LeaderSkill] =
+    P((attr.rep(sep=","|"&",min=1)~"attribute cards").? ~atkMag~"when HP is greater than"~num~"%").map {
+      case (a,m,n) => _.addAtkHpCondMoreThan(a.map{_.toSet},n.toInt,m)
+    }
+  val hpCondLtMag : Parser[LeaderSkill => LeaderSkill] =
+    P((attr.rep(sep=","|"&",min=1)~"attribute cards").? ~atkMag~"when HP is less than"~num~"%").map {
+      case (a,m,n) => _.addAtkHpCondLessThan(a.map{_.toSet},n.toInt,m)
+    }
+  val hpCondFullMag : Parser[LeaderSkill => LeaderSkill] =
+    P((attr.rep(sep=","|"&",min=1)~"attribute cards").? ~atkMag~"when HP is full").map {
+      case (a,m) => _.addAtkHpCondMoreThan(a.map{_.toSet},100,m)
     }
 
   val fixedComboMag : Parser[LeaderSkill => LeaderSkill] =
@@ -126,9 +140,9 @@ trait PDXLeaderSkillParser extends PDXParser { self: LeaderSkill =>
   val num : Parser[Double] = P(CharIn('0' to '9', ".").repX(1).!).map{java.lang.Double.parseDouble}
 
   def genLeaderSkill() : LeaderSkill = {
-    enDesc.split("\\. ").toSeq.foldLeft(this){ case (l,d) =>
+    enDesc.split("\\. |\\(|\\)").toSeq.foldLeft(this){ case (l,d) =>
       val s = if(d.endsWith(".")) d.dropRight(1) else d
-      statement.parse(s) match {
+      statement.parse(s.trim) match {
         case Result.Success(f,_) =>
           f(l)
         case x : Result.Failure =>
