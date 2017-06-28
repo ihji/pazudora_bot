@@ -37,7 +37,7 @@ object UserInputParser {
     P("방해").map{_ => Input.Jammer}
   def parse(str: String) : Either[String,Input] = {
     damageInput.parse(str) match {
-      case Result.Success(seq,_) =>
+      case Parsed.Success(seq,_) =>
         val (result,remaining) = seq.foldLeft(Input.empty,Seq.empty[DropSet]) {
           case ((i,d),c) =>
             c match {
@@ -48,7 +48,7 @@ object UserInputParser {
             }
         }
         Right(remaining.foldLeft(result){_.add(_)})
-      case _ : Result.Failure =>
+      case _ : Parsed.Failure =>
         Left("잘못된 문법입니다: "+str)
     }
   }

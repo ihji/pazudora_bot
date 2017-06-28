@@ -46,10 +46,10 @@ object EnermyParser {
 
   def parse(str: String) : Either[String,Enermy] = {
     enermy.parse(str) match {
-      case Result.Success(e,_) =>
+      case Parsed.Success(e,_) =>
         val result = e.foldLeft(Enermy(0,Monster.Fire,Seq())){case (x,y) => y(x)}
         Right(result)
-      case _ : Result.Failure =>
+      case _ : Parsed.Failure =>
         Left("잘못된 문법입니다: "+str)
     }
   }

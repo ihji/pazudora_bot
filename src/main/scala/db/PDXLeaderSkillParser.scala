@@ -143,9 +143,9 @@ trait PDXLeaderSkillParser extends PDXParser { self: LeaderSkill =>
     enDesc.split("\\. |\\(|\\)").toSeq.foldLeft(this){ case (l,d) =>
       val s = if(d.endsWith(".")) d.dropRight(1) else d
       statement.parse(s.trim) match {
-        case Result.Success(f,_) =>
+        case Parsed.Success(f,_) =>
           f(l)
-        case x : Result.Failure =>
+        case x : Parsed.Failure =>
           println("failed to parse: "+s)
           l
       }
