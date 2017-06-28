@@ -5,6 +5,7 @@ import db.web.TIGSearch._
 import net.ruippeixotog.scalascraper.browser.Browser
 import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import java.net.URLEncoder
 
 /**
   * Created by heejong.lee on 3/9/16.
@@ -19,7 +20,8 @@ trait TIGSearch {
           else s"http://m.thisisgame.com/pad/info/monster/list.php?numjp=$id"
         getListFromURL(idSearch)
       case None =>
-        val nameSearch = s"http://m.thisisgame.com/pad/info/monster/list.php?sf=name&sw=$input"
+        val name = URLEncoder.encode(input, "UTF-8")
+        val nameSearch = s"http://m.thisisgame.com/pad/info/monster/list.php?sf=name&sw=$name"
         getListFromURL(nameSearch)
     }
     if(seq.isEmpty) {
