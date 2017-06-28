@@ -31,9 +31,9 @@ class TelegramBot(key: String) {
       val updates = Try(bot.getUpdates(updateOffset, null, null).updates().asScala).getOrElse{
         println("error from getUpdates(), returning empty list"); Seq()
       }
-      for(update <- updates) {
-        val user = Option(update.message().from()).map{_.id().toInt}
-        val text = Option(update.message().text()).getOrElse("")
+      for (update <- updates; msg <- Option(update.message)) {
+        val user = Option(msg.from).map{_.id().toInt}
+        val text = Option(msg.text).getOrElse("")
         val param = makeParam(text)
         if(param.nonEmpty) {
           val chatId = update.message().chat().id()
