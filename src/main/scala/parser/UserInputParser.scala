@@ -2,32 +2,26 @@ package parser
 
 import data.Input
 import data.Input.DropSet
-import fastparse.WhitespaceApi
-import fastparse.noApi._
 
 /**
   * Created by ihji on 3/7/16.
   */
 object UserInputParser {
-  val White = WhitespaceApi.Wrapper{
-    import fastparse.all._
-    NoTrace(" ".rep)
-  }
-  import White._
+  import fastparse._, NoWhitespace._
 
-  val setp : Parser[Command] = P(color ~ num ~ &("셋") ~ "셋").map{ case (c,n) => DropCommand((0 until n).map{_ => DropSet(c,3)}) }
-  val twop : Parser[Command] = P(color ~ num ~ &("투웨이") ~ "투웨이").map{ case (c,n) => DropCommand((0 until n).map{_ => DropSet(c,4)}) }
-  val rowp : Parser[Command] = P(color ~ num ~ &("횡") ~ "횡").map{ case (c,n) => DropCommand((0 until n).map{_ => DropSet(c,6,isRow=true)}) }
-  val manyrowp : Parser[Command] = P(color ~ num ~ &("개횡") ~ "개횡").map{ case (c,n) => DropCommand(Seq(DropSet(c,n,isRow=true))) }
-  val manyp : Parser[Command] = P(color ~ num ~ &("개") ~ "개").map{ case (c,n) => DropCommand(Seq(DropSet(c,n))) }
-  val enhp : Parser[Command] = P("각"~num~"강화").map{ case n => EnhanceCommand(Some(n)) }
-  val enhallp : Parser[Command] = P("전체"~"강화").map{ case _ => EnhanceCommand(None) }
+  def setp[_ : P] : P[Command] = P(color ~ num ~ &("셋") ~ "셋").map{ case (c,n) => DropCommand((0 until n).map{_ => DropSet(c,3)}) }
+  def twop[_ : P] : P[Command] = P(color ~ num ~ &("투웨이") ~ "투웨이").map{ case (c,n) => DropCommand((0 until n).map{_ => DropSet(c,4)}) }
+  def rowp[_ : P] : P[Command] = P(color ~ num ~ &("횡") ~ "횡").map{ case (c,n) => DropCommand((0 until n).map{_ => DropSet(c,6,isRow=true)}) }
+  def manyrowp[_ : P] : P[Command] = P(color ~ num ~ &("개횡") ~ "개횡").map{ case (c,n) => DropCommand(Seq(DropSet(c,n,isRow=true))) }
+  def manyp[_ : P] : P[Command] = P(color ~ num ~ &("개") ~ "개").map{ case (c,n) => DropCommand(Seq(DropSet(c,n))) }
+  def enhp[_ : P] : P[Command] = P("각"~num~"강화").map{ case n => EnhanceCommand(Some(n)) }
+  def enhallp[_ : P] : P[Command] = P("전체"~"강화").map{ case _ => EnhanceCommand(None) }
 
-  val damageInput : Parser[Seq[Command]] = (setp | twop | rowp | manyrowp | manyp | enhp | enhallp).rep(min = 1)
+  def damageInput[_ : P] : P[Seq[Command]] = (setp | twop | rowp | manyrowp | manyp | enhp | enhallp).rep(1)
 
-  val num : Parser[Int] = P(CharIn('0' to '9').repX(1).!).map{_.toInt}
+  def num[_ : P] : P[Int] = P(CharIn("0-9").repX(1).!).map{_.toInt}
 
-  val color : Parser[Input.Drop] =
+  def color[_ : P] : P[Input.Drop] =
     P("불").map{_ => Input.Fire} |
     P("물").map{_ => Input.Water} |
     P("나무").map{_ => Input.Wood} |
@@ -35,8 +29,8 @@ object UserInputParser {
     P("어둠").map{_ => Input.Dark} |
     P("회복").map{_ => Input.Heart} |
     P("방해").map{_ => Input.Jammer}
-  def parse(str: String) : Either[String,Input] = {
-    damageInput.parse(str) match {
+  def parseInput(str: String) : Either[String,Input] = {
+    parse(str, damageInput(_)) match {
       case Parsed.Success(seq,_) =>
         val (result,remaining) = seq.foldLeft(Input.empty,Seq.empty[DropSet]) {
           case ((i,d),c) =>

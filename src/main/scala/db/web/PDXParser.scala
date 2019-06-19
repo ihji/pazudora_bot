@@ -2,9 +2,9 @@ package db.web
 
 import data.Monster._
 import db.MonsterID
-import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 
 /**
   * Created by heejong.lee on 3/7/16.
@@ -12,11 +12,11 @@ import net.ruippeixotog.scalascraper.dsl.DSL._
 trait PDXParser {
   def getElementsStringFromUS(monId: MonsterID) : String = {
     val id = monId.id
-    val browser = new Browser
+    val browser = new JsoupBrowser
     val doc = browser.get(s"http://puzzledragonx.com/en/monster.asp?n=$id")
     val elems = for(elem <- doc >?> elements("table.tableprofile"); e <- elem >?> texts("a")) yield e
     if(elems.nonEmpty) {
-      val result = elems.get.flatMap{getElement}
+      val result = elems.get.flatMap{getElement}.toList
       if(result.length == 1 || result.length == 2) {
         result.map{_.toString}.mkString("/")
       } else "속성이 없습니다."
@@ -24,11 +24,12 @@ trait PDXParser {
   }
   def getLSText(monId: MonsterID) : String = {
     val id = monId.id
-    val browser = new Browser
+    val browser = new JsoupBrowser
     val doc = browser.get(s"http://puzzledragonx.com/en/monster.asp?n=$id")
     val elems = for(elem <- doc >?> elements("table#tablestat")) yield elem.flatMap{_ >?> texts("td")}
-    val result = for(e <- elems; arr <- e.find{_.exists{_.contains("Leader Skill:")}}) yield {
-      val idx = arr.toList.indexOf("Leader Skill:")
+    val result = for(e <- elems; iter <- e.find{_.exists{_.contains("Leader Skill:")}}) yield {
+      val arr = iter.toList
+      val idx = arr.indexOf("Leader Skill:")
       val lsText = {
         val extract =
           if(idx + 5 < arr.length) (arr(idx+2),arr(idx+3),arr(idx+4),arr(idx+5))

@@ -1,10 +1,10 @@
 package db.web
 
 import db.MonsterID
-import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
-import org.jsoup.nodes.Document
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.model.Document
 
 /**
   * Created by heejong.lee on 2/23/16.
@@ -12,7 +12,7 @@ import org.jsoup.nodes.Document
 trait TIGParser {
   def getDocument(monId: MonsterID) : Document = {
     val id = monId.TIGid
-    val browser = new Browser
+    val browser = new JsoupBrowser
     val doc = browser.get(s"http://m.thisisgame.com/pad/info/monster/detail.php?code=$id")
     doc
   }
@@ -24,7 +24,7 @@ trait TIGParser {
 
     if(names.nonEmpty) {
       val result = names.get(0)
-      result
+      result.toList
     } else Seq.empty
   }
   def getRanking(doc: Document) : String = {
@@ -36,12 +36,12 @@ trait TIGParser {
     val rankings =
       for(detail <- doc >?> element("#pad-info-monster-detail");
           rankingC <- detail >?> elementList("div.m-table2")) yield {
-        rankingC.flatMap{_ >?> attrs("alt")("img.m-image1.size-w1p25")} ++ rankingC.flatMap{_ >?> texts("span.m-text1")}
+        (rankingC.flatMap{_ >?> attrs("alt")("img.m-image1.size-w1p25")} ++ rankingC.flatMap{_ >?> texts("span.m-text1")}).map{_.toList}
       }
     println("rankings: " + rankings)
 
     if(totals.nonEmpty && rankings.nonEmpty) {
-      val titles = "전체" +: rankings.get(0).toList
+      val titles = "전체" +: rankings.get(0)
       val positions = rankings.get(1).drop(2).sliding(titles.length+1,titles.length+1).toList
 
       val titleWithPositions =
@@ -54,7 +54,7 @@ trait TIGParser {
        """.stripMargin
     } else "랭킹정보를 가져오지 못했습니다."
   }
-  def getExtraStat(doc: Document) : (Seq[String],Seq[String],Seq[String],Seq[String],Seq[String]) = {
+  def getExtraStat(doc: Document) : (Seq[String], Seq[String], Seq[String], Seq[String], Seq[String]) = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
           statsC <- detail >?> elementList("div.m-split.m-clear.no-outter-padding")) yield {
@@ -64,7 +64,7 @@ trait TIGParser {
 
     val totals =
       for(detail <- doc >?> element("#pad-info-monster-detail");
-          totalC <- detail >?> elementList("div.m-split.split-4.no-outter-padding")) yield totalC.flatMap{_ >?> texts("span.m-text1")}
+          totalC <- detail >?> elementList("div.m-split.split-4.no-outter-padding")) yield totalC.flatMap{_ >?> texts("span.m-text1")}.map{_.toList}
     println("totals: " + totals)
 
     if(stats.nonEmpty && totals.nonEmpty) {
@@ -75,10 +75,10 @@ trait TIGParser {
 
       val totalPtr = totals.get(0)(3).split(":").map{_.trim}
 
-      (cost, maxlevel, maxexp, awks, totalPtr)
-    } else (Seq.empty,Seq.empty,Seq.empty,Seq.empty,Seq.empty)
+      (cost.toList, maxlevel.toList, maxexp.toList, awks.toList, totalPtr.toList)
+    } else (Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty)
   }
-  def getStat(doc: Document) : (Seq[String],Seq[String],Seq[String]) = {
+  def getStat(doc: Document) : (Seq[String], Seq[String], Seq[String]) = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
           statsC <- detail >?> elementList("div.m-split.m-clear.no-outter-padding")) yield statsC.flatMap{_ >?> texts("span.m-text1")}
@@ -88,10 +88,10 @@ trait TIGParser {
       val hp = stats.get(0)
       val atk = stats.get(1)
       val rev = stats.get(2)
-      (hp,atk,rev)
-    } else (Seq.empty,Seq.empty,Seq.empty)
+      (hp.toList, atk.toList, rev.toList)
+    } else (Seq.empty, Seq.empty, Seq.empty)
   }
-  def getSkills(doc: Document) : (Seq[String],Seq[String]) = {
+  def getSkills(doc: Document) : (Seq[String], Seq[String]) = {
     val skills =
       for(detail <- doc >?> element("#pad-info-monster-detail");
           skillC <- detail >?> elementList("li.list-one")) yield skillC.flatMap{_ >?> texts("span.m-text1")}
@@ -106,8 +106,8 @@ trait TIGParser {
           case (false, false) => (Seq("스킬", "", "", "없음"), Seq("리더스킬", "", "없음"))
         }
 
-      (askill, lskill)
-    } else (Seq.empty,Seq.empty)
+      (askill.toList, lskill.toList)
+    } else (Seq.empty, Seq.empty)
   }
   def getPic(doc: Document) : (String, String) = {
     val urls =
@@ -115,7 +115,7 @@ trait TIGParser {
           url    <- detail >?> attrs("src")("img")) yield url
 
     if(urls.nonEmpty) {
-      (urls.get(0), urls.get(1))
+      (urls.get.toList(0), urls.get.toList(1))
     } else ("섬네일을 가져오지 못했습니다.", "사진을 가져오지 못했습니다.")
   }
 }

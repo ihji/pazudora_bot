@@ -4,6 +4,8 @@ import db.web.PDXParser
 import parser.{EnermyParser, TeamParser, UserInputParser}
 import sem.{DamageSimulator, EnermySimulator}
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.io.Source
 
 object PazudoraBot extends TelegramBot(
@@ -65,7 +67,7 @@ object PazudoraBot extends TelegramBot(
         TeamParser.parseTeam(splitted(0)) match {
           case Left(msg) => msg
           case Right(team) =>
-            UserInputParser.parse(splitted(1)) match {
+            UserInputParser.parseInput(splitted(1)) match {
               case Left(msg) => msg
               case Right(inp) =>
                 println(team + "\n" + inp)
@@ -76,7 +78,7 @@ object PazudoraBot extends TelegramBot(
                 if(splitted.length == 2) {
                   s"*팀 HP* $totalHp *팀 회복* $totalRev\n\n" + sim.getDamageString(damageMap)
                 } else {
-                  EnermyParser.parse(splitted(2)) match {
+                  EnermyParser.parseInput(splitted(2)) match {
                     case Left(msg) => msg
                     case Right(enermy) =>
                       val actualDamageMap = new EnermySimulator(team,damageMap).getActualDamageMap(enermy)
@@ -96,7 +98,7 @@ object PazudoraBot extends TelegramBot(
   on("debug", "디버그 정보를 출력합니다.") { (sender, user, args) =>
     replyTo(sender, parseMode = Some("Markdown")) {
       val usedMemory = Math.ceil((Runtime.getRuntime.totalMemory() - Runtime.getRuntime.freeMemory()) / 1024.0 / 1024.0) + "MB"
-      val cachedSize = db.getDBSize
+      val cachedSize = Await.result(db.getDBSize, Duration(3, "seconds"))
       s"현재 메모리 사용량: $usedMemory\n현재 캐쉬된 몬스터수: $cachedSize"
     }
   }

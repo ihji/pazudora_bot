@@ -2,10 +2,9 @@ package db.web
 
 import data.Monster._
 import db.MonsterID
-import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
-
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 
 /**
   * Created by ihji on 3/6/16.
@@ -19,7 +18,7 @@ trait AppBankParser {
   }
   private def getElements(monId: MonsterID) : Option[(Element, Option[Element])] = {
     val id = monId.id
-    val browser = new Browser
+    val browser = new JsoupBrowser
     val idx = id match {
       case _ if id < 10 => s"00$id"
       case _ if id < 100 => s"0$id"

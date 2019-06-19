@@ -2,9 +2,9 @@ package db.web
 
 import db.MonsterID
 import db.web.TIGSearch._
-import net.ruippeixotog.scalascraper.browser.Browser
-import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
+import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import net.ruippeixotog.scalascraper.dsl.DSL._
+import net.ruippeixotog.scalascraper.dsl.DSL.Extract._
 import java.net.URLEncoder
 
 /**
@@ -44,7 +44,7 @@ trait TIGSearch {
     }
   }
   private def getListFromURL(url: String) : Seq[(Int, Int, String)] = {
-    val browser = new Browser
+    val browser = new JsoupBrowser
     val doc = browser.get(url)
     val targets = for(list <- doc >?> elementList("li.list-one.split-one.half-padding")) yield
       list.flatMap{x => for(a <- x >?> texts("span.m-text1"); b <- x >?> attr("href")("a")) yield (a,b)}
@@ -52,7 +52,12 @@ trait TIGSearch {
     println(targets)
 
     if(targets.nonEmpty) {
-      targets.get.map{case (x, y) => (x(0).drop(3).toInt,y.drop(16).toInt,x.updated(1,s"*${x(1)}*").mkString(" "))}
+      targets.get.map{
+        case (x, y) => (
+          x.toList.head.drop(3).toInt,y.drop(16).toInt,
+          x.toList.updated(1,s"*${x.toList(1)}*").mkString(" ")
+        )
+      }
     } else Seq.empty
   }
 }
