@@ -41,22 +41,22 @@ trait MonsterParser extends TIGParser with PDXParser {
     val (thumbURL,picURL) = getPic(doc)
 
     val rawStat = getStat(doc)
-    val statReg = """(\d+) > (\d+) \([\+-]\d+\)""".r
+    val statReg = """(\d+) \([\+-]\d+\)""".r
     val hpMatch = statReg.findFirstMatchIn(rawStat._1(1))
-    val hp = (hpMatch.get.group(1).toInt,hpMatch.get.group(2).toInt)
+    val hp = (rawStat._1.head.toInt, hpMatch.get.group(1).toInt)
     val atkMatch = statReg.findFirstMatchIn(rawStat._2(1))
-    val atk =(atkMatch.get.group(1).toInt,atkMatch.get.group(2).toInt)
+    val atk =(rawStat._2.head.toInt, atkMatch.get.group(1).toInt)
     val revMatch = statReg.findFirstMatchIn(rawStat._3(1))
-    val rev = (revMatch.get.group(1).toInt,revMatch.get.group(2).toInt)
+    val rev = (rawStat._3.head.toInt, revMatch.get.group(1).toInt)
 
     val rawExtraStat = getExtraStat(doc)
-    val cost = rawExtraStat._1(1).toInt
-    val maxLevel = rawExtraStat._2(1).toInt
-    val maxExp = rawExtraStat._3(1).replaceAll(",","").toInt
+    val cost = rawExtraStat._1.head.toInt
+    val maxLevel = rawExtraStat._2.head.toInt
+    val maxExp = rawExtraStat._3.head.replaceAll(",","").toInt
     val awoken =
-      if(rawExtraStat._4.length < 2 || rawExtraStat._4(1) == "없음") Seq.empty[AwokenSkill]
+      if(rawExtraStat._4.isEmpty || rawExtraStat._4.head == "없음") Seq.empty[AwokenSkill]
       else {
-        rawExtraStat._4.tail.map{Monster.toAwokenSkill}
+        rawExtraStat._4.map{Monster.toAwokenSkill}
       }
 
     val rawRanking = getRanking(doc)

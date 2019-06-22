@@ -54,41 +54,41 @@ trait TIGParser {
        """.stripMargin
     } else "랭킹정보를 가져오지 못했습니다."
   }
-  def getExtraStat(doc: Document) : (Seq[String], Seq[String], Seq[String], Seq[String], Seq[String]) = {
+  def getExtraStat(doc: Document) : (Seq[String], Seq[String], Seq[String], Seq[String]) = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
-          statsC <- detail >?> elementList("div.m-split.m-clear.no-outter-padding")) yield {
-        statsC.flatMap{_ >?> texts("span.m-text1")} ++ statsC.flatMap{_ >?> attrs("alt")("img.m-image1.size-h1p75")}.filter{_.nonEmpty}
-      }
-    println("stats: " + stats)
+          groups <- detail >?> elementList("div.m-comp-group");
+          statsC <- groups(4) >?> texts("span")) yield statsC.toList
+    println("extra stats: " + stats)
 
-    val totals =
+    val askills =
       for(detail <- doc >?> element("#pad-info-monster-detail");
-          totalC <- detail >?> elementList("div.m-split.split-4.no-outter-padding")) yield totalC.flatMap{_ >?> texts("span.m-text1")}.map{_.toList}
-    println("totals: " + totals)
+          groups <- detail >?> elementList("div.m-comp-group");
+          imgs <- groups(8) >?> elementList("img")) yield imgs.flatMap{_ >?> attr("alt")}
+    println("askills: " + askills)
 
-    if(stats.nonEmpty && totals.nonEmpty) {
-      val cost = stats.get(3)
-      val maxlevel = stats.get(4)
-      val maxexp = stats.get(5)
-      val awks = if(stats.get.toString.contains("각성스킬")) stats.get(6) ++ stats.get.last else List("각성스킬", "없음")
+    if(stats.nonEmpty && askills.nonEmpty) {
+      println("DEBUG: "+stats+","+askills)
+      val cost = Seq(stats.get(1))
+      val maxlevel = Seq(stats.get(3))
+      val maxexp = Seq(stats.get(5))
+      val awks = if(askills.get.nonEmpty) askills.get else Seq("없음")
 
-      val totalPtr = totals.get(0)(3).split(":").map{_.trim}
-
-      (cost.toList, maxlevel.toList, maxexp.toList, awks.toList, totalPtr.toList)
-    } else (Seq.empty, Seq.empty, Seq.empty, Seq.empty, Seq.empty)
+      (cost, maxlevel, maxexp, awks)
+    } else (Seq.empty, Seq.empty, Seq.empty, Seq.empty)
   }
   def getStat(doc: Document) : (Seq[String], Seq[String], Seq[String]) = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
-          statsC <- detail >?> elementList("div.m-split.m-clear.no-outter-padding")) yield statsC.flatMap{_ >?> texts("span.m-text1")}
+          groups <- detail >?> elementList("div.m-comp-group");
+          statsC <- groups(2) >?> texts("span")) yield statsC.toList
     println("stats: " + stats)
 
     if(stats.nonEmpty) {
-      val hp = stats.get(0)
-      val atk = stats.get(1)
-      val rev = stats.get(2)
-      (hp.toList, atk.toList, rev.toList)
+      val hp = Seq(stats.get(5), stats.get(9))
+      val atk = Seq(stats.get(6), stats.get(10))
+      val rev = Seq(stats.get(7), stats.get(11))
+      (hp, atk, rev)
     } else (Seq.empty, Seq.empty, Seq.empty)
   }
   def getSkills(doc: Document) : (Seq[String], Seq[String]) = {
