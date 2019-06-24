@@ -51,13 +51,14 @@ trait MonsterParser extends TIGParser with PDXParser {
 
     val rawExtraStat = getExtraStat(doc)
     val cost = rawExtraStat._1.head.toInt
-    val maxLevel = rawExtraStat._2.head.toInt
+    val maxLevel = rawExtraStat._2.head.split(">").last.trim.toInt
     val maxExp = rawExtraStat._3.head.replaceAll(",","").toInt
     val awoken =
-      if(rawExtraStat._4.isEmpty || rawExtraStat._4.head == "없음") Seq.empty[AwokenSkill]
-      else {
-        rawExtraStat._4.map{Monster.toAwokenSkill}
-      }
+      if(rawExtraStat._4.isEmpty) Seq.empty[AwokenSkill]
+      else rawExtraStat._4.map{Monster.toAwokenSkill}
+    val cawoken =
+      if(rawExtraStat._5.isEmpty) Seq.empty[AwokenSkill]
+      else rawExtraStat._5.map{Monster.toAwokenSkill}
 
     val rawRanking = getRanking(doc)
     val ranking = rawRanking
@@ -79,6 +80,6 @@ trait MonsterParser extends TIGParser with PDXParser {
         Some(LeaderSkill(rawLSkill(1),rawLSkill(2),enDesc))
       }
 
-    Monster(idx,krName,jpName,thumbURL,picURL,ty,star,element,hp,atk,rev,cost,maxLevel,maxExp,ranking,awoken,askill,lskill,volatile = false)
+    Monster(idx,krName,jpName,thumbURL,picURL,ty,star,element,hp,atk,rev,cost,maxLevel,maxExp,ranking,awoken,cawoken,askill,lskill,volatile = false)
   }
 }

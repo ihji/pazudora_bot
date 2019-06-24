@@ -54,7 +54,7 @@ trait TIGParser {
        """.stripMargin
     } else "랭킹정보를 가져오지 못했습니다."
   }
-  def getExtraStat(doc: Document) : (Seq[String], Seq[String], Seq[String], Seq[String]) = {
+  def getExtraStat(doc: Document) : (Seq[String], Seq[String], Seq[String], Seq[String], Seq[String]) = {
     val stats =
       for(detail <- doc >?> element("#pad-info-monster-detail");
           groups <- detail >?> elementList("div.m-comp-group");
@@ -67,15 +67,19 @@ trait TIGParser {
           imgs <- groups(8) >?> elementList("img")) yield imgs.flatMap{_ >?> attr("alt")}
     println("askills: " + askills)
 
-    if(stats.nonEmpty && askills.nonEmpty) {
-      println("DEBUG: "+stats+","+askills)
-      val cost = Seq(stats.get(1))
-      val maxlevel = Seq(stats.get(3))
-      val maxexp = Seq(stats.get(5))
-      val awks = if(askills.get.nonEmpty) askills.get else Seq("없음")
+    val caskills =
+      for(detail <- doc >?> element("#pad-info-monster-detail");
+          groups <- detail >?> elementList("div.m-comp-group");
+          imgs <- groups(10) >?> elementList("img")) yield imgs.flatMap{_ >?> attr("alt")}
+    println("caskills: " + caskills)
 
-      (cost, maxlevel, maxexp, awks)
-    } else (Seq.empty, Seq.empty, Seq.empty, Seq.empty)
+    val cost = stats.toSeq.map{_(1)}
+    val maxlevel = stats.toSeq.map{_(3)}
+    val maxexp = stats.toSeq.map{_(5)}
+    val awks = askills.toSeq.flatten
+    val cawks = caskills.toSeq.flatten
+
+    (cost, maxlevel, maxexp, awks, cawks)
   }
   def getStat(doc: Document) : (Seq[String], Seq[String], Seq[String]) = {
     val stats =

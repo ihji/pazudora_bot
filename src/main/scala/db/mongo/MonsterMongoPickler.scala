@@ -50,6 +50,7 @@ trait MonsterMongoPickler {
       "maxExp" -> t.maxExp,
       "ranking" -> t.ranking,
       "awokenSkill" -> t.awokenSkill.map{_.toString},
+      "choAwokenSkill" -> t.choAwokenSkill.map{_.toString},
       "aSkill" -> t.aSkill,
       "lSkill" -> t.lSkill,
       "volatile" -> t.volatile
@@ -101,6 +102,7 @@ trait MonsterMongoPickler {
       bson.getAs[Int]("maxExp").get,
       bson.getAs[String]("ranking").get,
       bson.getAs[List[String]]("awokenSkill").get.map{Monster.toAwokenSkill},
+      bson.getAs[List[String]]("choAwokenSkill").get.map{Monster.toAwokenSkill},
       bson.getAs[Monster.ActiveSkill]("aSkill"),
       bson.getAs[LeaderSkill]("lSkill"),
       bson.getAs[Boolean]("volatile").getOrElse(false)

@@ -24,6 +24,7 @@ case class Monster
   maxExp: Int,
   ranking: String,
   awokenSkill: Seq[AwokenSkill],
+  choAwokenSkill: Seq[AwokenSkill],
   aSkill: Option[ActiveSkill],
   lSkill: Option[LeaderSkill],
   volatile: Boolean
@@ -48,6 +49,7 @@ case class Monster
        |*회복* ${rev._1} > ${rev._2} (+${rev._2 - rev._1})
        |*코스트* $cost *최대레벨* $maxLevel *총경험치* ${Damage.friendly(maxExp)} *환산치* $rating
        |*각성스킬* ${if(awokenSkill.isEmpty) "없음" else awokenSkill.mkString(", ")}
+       |*초각성스킬* ${if (choAwokenSkill.isEmpty) "없음" else choAwokenSkill.mkString(", ")}
        |
        |*스킬* ${if(aSkill.nonEmpty) s"${aSkill.get.name} Lv.1 턴: ${aSkill.get.maxTurn} (Lv.${aSkill.get.maxLevel} 턴: ${aSkill.get.maxTurn - aSkill.get.maxLevel + 1})" else ""}
        |${if(aSkill.nonEmpty) aSkill.get.desc else "없음"}
@@ -93,16 +95,20 @@ object Monster {
   case object WoodEn extends AwokenSkill { override def toString = "나무속성강화" }
   case object LightEn extends AwokenSkill { override def toString = "빛속성강화" }
   case object DarkEn extends AwokenSkill { override def toString = "어둠속성강화" }
+  case object ComboEn extends AwokenSkill { override def toString = "콤보강화" }
   case object FireDep extends AwokenSkill { override def toString = "불대미지경감" }
   case object WaterDep extends AwokenSkill { override def toString = "물대미지경감" }
   case object WoodDep extends AwokenSkill { override def toString = "나무대미지경감" }
   case object LightDep extends AwokenSkill { override def toString = "빛대미지경감" }
   case object DarkDep extends AwokenSkill { override def toString = "어둠대미지경감" }
   case object JammerRes extends AwokenSkill { override def toString = "방해내성" }
-  case object BindRes extends AwokenSkill { override def toString = "바인딩내성" }
+  case object BindRes extends AwokenSkill { override def toString = "바인드내성" }
+  case object BindImm extends AwokenSkill { override def toString = "바인드내성+" }
   case object BlindRes extends AwokenSkill { override def toString = "암흑내성" }
   case object PoisonRes extends AwokenSkill { override def toString = "독내성" }
   case object SkillRes extends AwokenSkill { override def toString = "봉인내성" }
+  case object CloudRes extends AwokenSkill { override def toString = "구름내성" }
+  case object BandRes extends AwokenSkill { override def toString = "조작불가내성" }
   case object HpEn extends AwokenSkill { override def toString = "HP강화" }
   case object AtkEn extends AwokenSkill { override def toString = "공격강화" }
   case object RevEn extends AwokenSkill { override def toString = "회복강화" }
@@ -110,6 +116,7 @@ object Monster {
   case object AutoRec extends AwokenSkill { override def toString = "자동회복" }
   case object SkillBoost extends AwokenSkill { override def toString = "스킬부스트" }
   case object TwoWayAtk extends AwokenSkill { override def toString = "2마리공격" }
+  case object BonusAtk extends AwokenSkill { override def toString = "추가공격" }
   case object TimeExt extends AwokenSkill { override def toString = "조작시간연장" }
   case object HeartDropEn extends AwokenSkill { override def toString = "회복드롭강화" }
   case object MultiBoost extends AwokenSkill { override def toString = "멀티부스터" }
@@ -117,6 +124,7 @@ object Monster {
   case object MachineKiller extends AwokenSkill { override def toString = "머신킬러" }
   case object DevilKiller extends AwokenSkill { override def toString = "악마킬러" }
   case object DragonKiller extends AwokenSkill { override def toString = "드래곤킬러" }
+  case object DungeonBonus extends AwokenSkill { override def toString = "던전보너스" }
 
   def toAwokenSkill(str: String) : AwokenSkill = {
     str.replaceAll(" ","") match {
@@ -130,6 +138,7 @@ object Monster {
       case x if x == WoodEn.toString => WoodEn
       case x if x == LightEn.toString => LightEn
       case x if x == DarkEn.toString => DarkEn
+      case x if x == ComboEn.toString => ComboEn
       case x if x == FireDep.toString => FireDep
       case x if x == WaterDep.toString => WaterDep
       case x if x == WoodDep.toString => WoodDep
@@ -137,9 +146,12 @@ object Monster {
       case x if x == DarkDep.toString => DarkDep
       case x if x == JammerRes.toString => JammerRes
       case x if x == BindRes.toString => BindRes
+      case x if x == BindImm.toString => BindImm
       case x if x == BlindRes.toString => BlindRes
       case x if x == PoisonRes.toString => PoisonRes
       case x if x == SkillRes.toString => SkillRes
+      case x if x == CloudRes.toString => CloudRes
+      case x if x == BandRes.toString => BandRes
       case x if x == HpEn.toString => HpEn
       case x if x == AtkEn.toString => AtkEn
       case x if x == RevEn.toString => RevEn
@@ -147,6 +159,7 @@ object Monster {
       case x if x == AutoRec.toString => AutoRec
       case x if x == SkillBoost.toString => SkillBoost
       case x if x == TwoWayAtk.toString => TwoWayAtk
+      case x if x == BonusAtk.toString => BonusAtk
       case x if x == TimeExt.toString => TimeExt
       case x if x == HeartDropEn.toString => HeartDropEn
       case x if x == MultiBoost.toString => MultiBoost
@@ -154,6 +167,7 @@ object Monster {
       case x if x == MachineKiller.toString => MachineKiller
       case x if x == DevilKiller.toString => DevilKiller
       case x if x == DragonKiller.toString => DragonKiller
+      case x if x == DungeonBonus.toString => DungeonBonus
     }
   }
 
