@@ -110,8 +110,10 @@ object Monster {
   case object CloudRes extends AwokenSkill { override def toString = "구름내성" }
   case object BandRes extends AwokenSkill { override def toString = "조작불가내성" }
   case object HpEn extends AwokenSkill { override def toString = "HP강화" }
+  case object TeamHpEn extends AwokenSkill { override def toString = "팀HP강화" }
   case object AtkEn extends AwokenSkill { override def toString = "공격강화" }
   case object RevEn extends AwokenSkill { override def toString = "회복강화" }
+  case object TeamRevEn extends AwokenSkill { override def toString = "팀회복력강화" }
   case object BindRec extends AwokenSkill { override def toString = "바인드회복" }
   case object AutoRec extends AwokenSkill { override def toString = "자동회복" }
   case object SkillBoost extends AwokenSkill { override def toString = "스킬부스트" }
@@ -125,6 +127,7 @@ object Monster {
   case object DevilKiller extends AwokenSkill { override def toString = "악마킬러" }
   case object DragonKiller extends AwokenSkill { override def toString = "드래곤킬러" }
   case object DungeonBonus extends AwokenSkill { override def toString = "던전보너스" }
+  case object DamageImmOff extends AwokenSkill { override def toString = "대미지무효관통" }
 
   def toAwokenSkill(str: String) : AwokenSkill = {
     str.replaceAll(" ","") match {
@@ -153,8 +156,10 @@ object Monster {
       case x if x == CloudRes.toString => CloudRes
       case x if x == BandRes.toString => BandRes
       case x if x == HpEn.toString => HpEn
+      case x if x == TeamHpEn.toString => TeamHpEn
       case x if x == AtkEn.toString => AtkEn
       case x if x == RevEn.toString => RevEn
+      case x if x == TeamRevEn.toString => TeamRevEn
       case x if x == BindRec.toString => BindRec
       case x if x == AutoRec.toString => AutoRec
       case x if x == SkillBoost.toString => SkillBoost
@@ -168,6 +173,7 @@ object Monster {
       case x if x == DevilKiller.toString => DevilKiller
       case x if x == DragonKiller.toString => DragonKiller
       case x if x == DungeonBonus.toString => DungeonBonus
+      case x if x == DamageImmOff.toString => DamageImmOff
     }
   }
 
