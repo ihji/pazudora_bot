@@ -8,6 +8,7 @@ import scala.util.{Failure, Success, Try}
 /**
   * Created by heejong.lee on 3/23/16.
   */
+
 trait AdminCmds {
   var eggs : RareEggs
 
@@ -17,6 +18,7 @@ trait AdminCmds {
       val cmd = if(args.length >= 2) args(1) else ""
       val param = if(args.length >= 3) args.drop(2).mkString(" ") else ""
       cmd match {
+        /*
         case "engf" =>
           enableGodFest(eggs, param) match {
             case Right(newEggs) =>
@@ -59,6 +61,7 @@ trait AdminCmds {
               "카니발 대상 배율이 수정되었습니다."
           }
         case "rset" => rollSetting(eggs)
+        */
         case "clcc" => clearCache(param)
         case _ =>
           """커맨드는 다음 중 하나여야 합니다:
@@ -75,7 +78,7 @@ trait AdminCmds {
       }
     } else "어드민 키가 맞지 않습니다."
   }
-
+  /*
   private def setGodFestBenefit(egg: RareEggs, args: String) : Either[String,RareEggs] = {
     Try(args.toInt) match {
       case Success(x) =>
@@ -150,6 +153,7 @@ trait AdminCmds {
        |갓페 한정신 확률 보정: ${egg.GODFEST_LIMITED_BENEFIT} 배
      """.stripMargin
   }
+  */
   private def clearCache(args: String) : String = {
     if(args == "all") {
       MonsterDB.clearMonsterCache(None)

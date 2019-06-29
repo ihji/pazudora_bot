@@ -7,14 +7,38 @@ import scala.util.Random
 /**
   * Created by heejong.lee on 3/22/16.
   */
-case class RareEggs(prob: Map[Double, Seq[Int]]) {
+case class LegacyRareEggs(carnival: Option[Monster.Element],
+                    godFest: Option[Seq[LegacyRareEggs.MonsterKind]],
+                    excludeGodFestLimited: Set[Int],
+                    CARNIVAL_BENEFIT: Int = 3,
+                    GODFEST_LIMITED_BENEFIT: Int = 3,
+                    GODFEST_BENEFIT: Int = 3) {
+  val STAR5_PENALTY = 2
+  val STAR4_PENALTY = 3
+
   val random = new Random(new Date().getTime())
 
-  lazy val targets =
-    prob.toList.flatMap{
-      case (p, s) =>
-        (1L to Math.round(p * 10)).flatMap{_ => s}
-    }
+  lazy val targets = {
+    val carnivalMonsters = carnival.map{e => LegacyRareEggs.rareEggMonsters.filter{x => x.rarity == 5 && x.elem == e}}.getOrElse(Seq())
+    val carnivalLimited = carnival.map{e => LegacyRareEggs.rareEggMonstersCarnivalLimited.filter{x => x.rarity == 5 && x.elem == e}}.getOrElse(Seq())
+    val godFestMonsters = godFest.map{_.flatMap{k => LegacyRareEggs.rareEggMonsters.filter{_.kind == k}}}.getOrElse(Seq())
+    val godFestLimiteds = if(godFest.nonEmpty) LegacyRareEggs.rareEggMonstersGodFestLimited.filterNot{x => excludeGodFestLimited(x.id)} else Seq()
+
+    val duplicatedMonsters = carnivalMonsters intersect godFestMonsters
+
+    val allMonsters =
+      (LegacyRareEggs.rareEggMonsters ++ godFestLimiteds ++ carnivalLimited ++
+      (1 until CARNIVAL_BENEFIT).flatMap{_ => carnivalMonsters ++ carnivalLimited} ++
+      (1 until GODFEST_LIMITED_BENEFIT).flatMap{_ => godFestLimiteds} ++
+      (1 until GODFEST_BENEFIT).flatMap{_ => godFestMonsters}) diff
+      (1 until (CARNIVAL_BENEFIT min GODFEST_BENEFIT)).flatMap{_ => duplicatedMonsters}
+    val allMonsters5 = allMonsters.filter{_.rarity == 5}
+    val allMonsters4 = allMonsters.filter{_.rarity == 4}
+
+    allMonsters ++
+      (1 until STAR5_PENALTY).flatMap{_ => allMonsters5} ++
+      (1 until STAR4_PENALTY).flatMap{_ => allMonsters4}
+  }.map{_.id}
 
   def pick() : Int = {
     val idx = random.nextInt(targets.length)
@@ -22,10 +46,10 @@ case class RareEggs(prob: Map[Double, Seq[Int]]) {
   }
 }
 
-object RareEggs {
+object LegacyRareEggs {
   case class Egg(id: Int, rarity: Int, elem: Monster.Element, kind: MonsterKind)
 
-  val jewelryPrincess = Seq(
+  val rareEggMonstersCarnivalLimited = Seq(
     Egg(2665, 5, Monster.Fire, CarnivalLimited),
     Egg(2667, 5, Monster.Water, CarnivalLimited),
     Egg(2669, 5, Monster.Wood, CarnivalLimited),
@@ -34,59 +58,35 @@ object RareEggs {
   )
 
   val rareEggMonstersGodFestLimited = Seq(
-    Egg(365, 7, Monster.Water, GodFestLimited), // 청딘
-    Egg(643, 7, Monster.Dark, GodFestLimited), // 흑타
-    Egg(914, 7, Monster.Wood, GodFestLimited), // 녹소
-    Egg(1089, 7, Monster.Water, GodFestLimited), // 청소
-    Egg(1108, 7, Monster.Fire, GodFestLimited), // 적딘
-    Egg(1588, 7, Monster.Dark, GodFestLimited), // 암칼리
-    Egg(1674, 7, Monster.Water, GodFestLimited), // 스쿨드
-    Egg(1949, 7, Monster.Dark, GodFestLimited), // 티폰
-    Egg(1951, 7, Monster.Light, GodFestLimited), // 이르무
-    Egg(2146, 7, Monster.Wood, GodFestLimited), // 카에데
-    Egg(2148, 7, Monster.Light, GodFestLimited), // 칸나
-    Egg(2443, 7, Monster.Water, GodFestLimited), // 류네
-    Egg(2509, 7, Monster.Wood, GodFestLimited), // 실비
-    Egg(2565, 7, Monster.Water, GodFestLimited), // 쉐아트
-    Egg(2592, 7, Monster.Dark, GodFestLimited), // 에스카마리
-    Egg(2713, 7, Monster.Fire, GodFestLimited), // 발딘
-    Egg(2900, 7, Monster.Light, GodFestLimited), // 펜니르 비즈
-    Egg(2943, 7, Monster.Light, GodFestLimited), // 셰리아스 루츠
-    Egg(2991, 7, Monster.Fire, GodFestLimited), // 단탈리온
-    Egg(2997, 7, Monster.Light, GodFestLimited), // 파이몬
-    Egg(2999, 7, Monster.Dark, GodFestLimited), // 그레모리
-    Egg(3268, 7, Monster.Light, GodFestLimited), // 아텐
-    Egg(3414, 7, Monster.Wood, GodFestLimited), // 풍신
-    Egg(3416, 7, Monster.Light, GodFestLimited), // 뇌신
-    Egg(3603, 7, Monster.Water, GodFestLimited), // 아메노미나카누시
-    Egg(3646, 7, Monster.Light, GodFestLimited), // 요그소토스
-    Egg(3757, 7, Monster.Fire, GodFestLimited), // 불네이
-    Egg(3758, 7, Monster.Water, GodFestLimited), // 물네이
-    Egg(3759, 7, Monster.Wood, GodFestLimited), // 나무네이
-    Egg(3760, 7, Monster.Light, GodFestLimited), // 빛네이
-    Egg(3761, 7, Monster.Dark, GodFestLimited), // 어둠네이
-    Egg(3786, 7, Monster.Dark, GodFestLimited), // 카미무스비
-    Egg(3897, 7, Monster.Fire, GodFestLimited), // 불코튼
-    Egg(3898, 7, Monster.Water, GodFestLimited), // 물코튼
-    Egg(3899, 7, Monster.Wood, GodFestLimited), // 나무코튼
-    Egg(3900, 7, Monster.Light, GodFestLimited), // 빛코튼
-    Egg(3901, 7, Monster.Dark, GodFestLimited), // 어둠코튼
-    Egg(4058, 7, Monster.Fire, GodFestLimited), // 마하
-    Egg(4062, 7, Monster.Dark, GodFestLimited), // 모리그
-    Egg(4410, 7, Monster.Fire, GodFestLimited), // 마두
-    Egg(4412, 7, Monster.Water, GodFestLimited), // 리체
-    Egg(4414, 7, Monster.Wood, GodFestLimited), // 제라
-    Egg(4647, 7, Monster.Light, GodFestLimited), // 사레네
-    Egg(4649, 7, Monster.Dark, GodFestLimited), // 벨로아
-    Egg(4834, 7, Monster.Light, GodFestLimited), // 발키리 시엘
-    Egg(4836, 7, Monster.Light, GodFestLimited), // 제우스 기가
-    Egg(4838, 7, Monster.Light, GodFestLimited), // 아테나 논
-    Egg(5125, 7, Monster.Wood, GodFestLimited), // 구참공
-    Egg(5127, 7, Monster.Light, GodFestLimited), // 가란도우지
-    Egg(5129, 7, Monster.Wood, GodFestLimited), // 용기사 렉스
-    Egg(5131, 7, Monster.Fire, GodFestLimited), // 에키드나 사라
-    Egg(5133, 7, Monster.Dark, GodFestLimited), // 헤라 루나
-    Egg(5234, 7, Monster.Wood, GodFestLimited) // 쉘링포드
+    Egg(362, 5, Monster.Wood, GodFestLimited), // 녹딘
+    Egg(364, 6, Monster.Water, GodFestLimited), // 청딘
+    Egg(640, 5, Monster.Light, GodFestLimited), // 백타
+    Egg(642, 6, Monster.Dark, GodFestLimited), // 흑타
+    Egg(911, 5, Monster.Fire, GodFestLimited), // 적소
+    Egg(913, 6, Monster.Wood, GodFestLimited), // 녹소
+    Egg(1088, 6, Monster.Water, GodFestLimited), // 청소
+    Egg(1107, 6, Monster.Fire, GodFestLimited), // 적딘
+    Egg(1585, 5, Monster.Light, GodFestLimited), // 빛칼리
+    Egg(1587, 6, Monster.Dark, GodFestLimited), // 암칼리
+    Egg(1669, 5, Monster.Fire, GodFestLimited), // 울드
+    Egg(1671, 5, Monster.Wood, GodFestLimited), // 베르단디
+    Egg(1673, 6, Monster.Water, GodFestLimited), // 스쿨드
+    Egg(1946, 5, Monster.Fire, GodFestLimited), // 가디우스
+    Egg(1948, 6, Monster.Dark, GodFestLimited), // 티폰
+    Egg(1950, 6, Monster.Light, GodFestLimited), // 이르무
+    Egg(1952, 5, Monster.Dark, GodFestLimited), // 즈오
+    Egg(2141, 5, Monster.Fire, GodFestLimited), // 츠바키
+    Egg(2143, 5, Monster.Water, GodFestLimited), // 스미레
+    Egg(2145, 6, Monster.Wood, GodFestLimited), // 카에데
+    Egg(2147, 6, Monster.Light, GodFestLimited), // 칸나
+    Egg(2149, 5, Monster.Dark, GodFestLimited), // 사츠키
+    Egg(2440, 5, Monster.Light, GodFestLimited), // 사리아
+    Egg(2442, 6, Monster.Water, GodFestLimited), // 류네
+    Egg(2508, 6, Monster.Wood, GodFestLimited), // 실비
+    Egg(2562, 5, Monster.Wood, GodFestLimited), // 아우스트라리스
+    Egg(2564, 6, Monster.Water, GodFestLimited), // 쉐아트
+    Egg(2591, 6, Monster.Dark, GodFestLimited), // 에스카마리
+    Egg(2640, 5, Monster.Dark, GodFestLimited) // 펜릴
   )
   val rareEggMonsters = Seq(
     Egg(1270, 6, Monster.Fire, Valkyries),
@@ -368,21 +368,6 @@ object RareEggs {
     Egg(356, 4, Monster.Wood, Elementals),
     Egg(358, 4, Monster.Light, Elementals),
     Egg(360, 4, Monster.Dark, Elementals)
-  )
-
-  val yokaiWatchCollab = Map(
-    2.5 -> Seq(4949, 4955, 4952, 4957, 4959),
-    3.5 -> Seq(4965),
-    14.0 -> Seq(4961, 4971, 4963, 4967, 4973, 4969)
-  )
-
-  val juneBrideSeason = Map(
-    1.0 -> Seq(5382),
-    1.5 -> Seq(4588, 4589, 2949, 3790),
-    2.0 -> Seq(5381, 2951, 5380, 3791),
-    7.5 -> Seq(2953, 2952),
-    13.6 -> Seq(2955, 2956, 2954),
-    14.6 -> Seq(2957, 2958)
   )
 
   def str2GodFestTargets(str: String) : Option[MonsterKind] = {
