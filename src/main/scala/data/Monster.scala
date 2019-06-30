@@ -95,39 +95,63 @@ object Monster {
   case object WoodEn extends AwokenSkill { override def toString = "나무속성강화" }
   case object LightEn extends AwokenSkill { override def toString = "빛속성강화" }
   case object DarkEn extends AwokenSkill { override def toString = "어둠속성강화" }
-  case object ComboEn extends AwokenSkill { override def toString = "콤보강화" }
   case object FireDep extends AwokenSkill { override def toString = "불대미지경감" }
   case object WaterDep extends AwokenSkill { override def toString = "물대미지경감" }
   case object WoodDep extends AwokenSkill { override def toString = "나무대미지경감" }
   case object LightDep extends AwokenSkill { override def toString = "빛대미지경감" }
   case object DarkDep extends AwokenSkill { override def toString = "어둠대미지경감" }
-  case object JammerRes extends AwokenSkill { override def toString = "방해내성" }
   case object BindRes extends AwokenSkill { override def toString = "바인드내성" }
   case object BindImm extends AwokenSkill { override def toString = "바인드내성+" }
+  case object JammerRes extends AwokenSkill { override def toString = "방해내성" }
   case object BlindRes extends AwokenSkill { override def toString = "암흑내성" }
   case object PoisonRes extends AwokenSkill { override def toString = "독내성" }
   case object SkillRes extends AwokenSkill { override def toString = "봉인내성" }
-  case object CloudRes extends AwokenSkill { override def toString = "구름내성" }
   case object BandRes extends AwokenSkill { override def toString = "조작불가내성" }
+  case object CloudRes extends AwokenSkill { override def toString = "구름내성" }
   case object HpEn extends AwokenSkill { override def toString = "HP강화" }
-  case object TeamHpEn extends AwokenSkill { override def toString = "팀HP강화" }
   case object AtkEn extends AwokenSkill { override def toString = "공격강화" }
   case object RevEn extends AwokenSkill { override def toString = "회복강화" }
+  case object TeamHpEn extends AwokenSkill { override def toString = "팀HP강화" }
   case object TeamRevEn extends AwokenSkill { override def toString = "팀회복력강화" }
+  case object SkillBoost extends AwokenSkill { override def toString = "스킬부스트" }
+  case object SkillBoostPlus extends AwokenSkill { override def toString = "스킬부스트+" }
+  case object TwoWayAtk extends AwokenSkill { override def toString = "2마리공격" }
+  case object ComboEn extends AwokenSkill { override def toString = "콤보강화" }
+  case object ChoComboEn extends AwokenSkill { override def toString = "초콤보강화" }
+  case object BonusAtk extends AwokenSkill { override def toString = "추가공격" }
+  case object ChoBonusAtk extends AwokenSkill { override def toString = "초추가공격" }
   case object BindRec extends AwokenSkill { override def toString = "바인드회복" }
   case object AutoRec extends AwokenSkill { override def toString = "자동회복" }
-  case object SkillBoost extends AwokenSkill { override def toString = "스킬부스트" }
-  case object TwoWayAtk extends AwokenSkill { override def toString = "2마리공격" }
-  case object BonusAtk extends AwokenSkill { override def toString = "추가공격" }
-  case object TimeExt extends AwokenSkill { override def toString = "조작시간연장" }
   case object HeartDropEn extends AwokenSkill { override def toString = "회복드롭강화" }
   case object MultiBoost extends AwokenSkill { override def toString = "멀티부스터" }
+  case object GuardBreak extends AwokenSkill { override def toString = "가드브레이크" }
+  case object TimeExt extends AwokenSkill { override def toString = "조작시간연장" }
+  case object TimeExtPlus extends AwokenSkill { override def toString = "조작시간연장+" }
   case object GodKiller extends AwokenSkill { override def toString = "신킬러" }
   case object MachineKiller extends AwokenSkill { override def toString = "머신킬러" }
   case object DevilKiller extends AwokenSkill { override def toString = "악마킬러" }
   case object DragonKiller extends AwokenSkill { override def toString = "드래곤킬러" }
+  case object RevKiller extends AwokenSkill { override def toString = "회복킬러" }
+  case object HpKiller extends AwokenSkill { override def toString = "체력킬러" }
+  case object AtkKiller extends AwokenSkill { override def toString = "공격킬러" }
+  case object BalKiller extends AwokenSkill { override def toString = "밸런스킬러" }
+  case object AwokenKiller extends AwokenSkill { override def toString = "능력각성용킬러" }
+  case object EnhanceKiller extends AwokenSkill { override def toString = "강화합성용킬러" }
+  case object SellKiller extends AwokenSkill { override def toString = "판매용킬러" }
+  case object EvolKiller extends AwokenSkill { override def toString = "진화용킬러" }
   case object DungeonBonus extends AwokenSkill { override def toString = "던전보너스" }
   case object DamageImmOff extends AwokenSkill { override def toString = "대미지무효관통" }
+  case object Hp80UpEn extends AwokenSkill { override def toString = "HP80%이상강화" }
+  case object Hp50DownEn extends AwokenSkill { override def toString = "HP50%이하강화" }
+  case object LDep extends AwokenSkill { override def toString = "L자지우기경감" }
+  case object LAtk extends AwokenSkill { override def toString = "L자지우기공격" }
+  case object SkillCharge extends AwokenSkill { override def toString = "스킬충전" }
+  case object AwokenAssist extends AwokenSkill { override def toString = "각성어시스트" }
+  case object SkillVoice extends AwokenSkill { override def toString = "스킬보이스" }
+  case object ComboDrop extends AwokenSkill { override def toString = "콤보드롭" }
+  case object HpDem extends AwokenSkill { override def toString = "HP약화" }
+  case object AtkDem extends AwokenSkill { override def toString = "공격약화" }
+  case object RevDem extends AwokenSkill { override def toString = "회복약화" }
 
   def toAwokenSkill(str: String) : AwokenSkill = {
     str.replaceAll(" ","") match {
@@ -142,6 +166,7 @@ object Monster {
       case x if x == LightEn.toString => LightEn
       case x if x == DarkEn.toString => DarkEn
       case x if x == ComboEn.toString => ComboEn
+      case x if x == ChoComboEn.toString => ChoComboEn
       case x if x == FireDep.toString => FireDep
       case x if x == WaterDep.toString => WaterDep
       case x if x == WoodDep.toString => WoodDep
@@ -163,17 +188,40 @@ object Monster {
       case x if x == BindRec.toString => BindRec
       case x if x == AutoRec.toString => AutoRec
       case x if x == SkillBoost.toString => SkillBoost
+      case x if x == SkillBoostPlus.toString => SkillBoostPlus
       case x if x == TwoWayAtk.toString => TwoWayAtk
       case x if x == BonusAtk.toString => BonusAtk
+      case x if x == ChoBonusAtk.toString => ChoBonusAtk
       case x if x == TimeExt.toString => TimeExt
+      case x if x == TimeExtPlus.toString => TimeExtPlus
       case x if x == HeartDropEn.toString => HeartDropEn
       case x if x == MultiBoost.toString => MultiBoost
+      case x if x == GuardBreak.toString => GuardBreak
       case x if x == GodKiller.toString => GodKiller
       case x if x == MachineKiller.toString => MachineKiller
       case x if x == DevilKiller.toString => DevilKiller
       case x if x == DragonKiller.toString => DragonKiller
+      case x if x == RevKiller.toString => RevKiller
+      case x if x == HpKiller.toString => HpKiller
+      case x if x == AtkKiller.toString => AtkKiller
+      case x if x == BalKiller.toString => BalKiller
+      case x if x == AwokenKiller.toString => AwokenKiller
+      case x if x == EnhanceKiller.toString => EnhanceKiller
+      case x if x == SellKiller.toString => SellKiller
+      case x if x == EvolKiller.toString => EvolKiller
       case x if x == DungeonBonus.toString => DungeonBonus
       case x if x == DamageImmOff.toString => DamageImmOff
+      case x if x == Hp80UpEn.toString => Hp80UpEn
+      case x if x == Hp50DownEn.toString => Hp50DownEn
+      case x if x == LDep.toString => LDep
+      case x if x == LAtk.toString => LAtk
+      case x if x == SkillCharge.toString => SkillCharge
+      case x if x == AwokenAssist.toString => AwokenAssist
+      case x if x == SkillVoice.toString => SkillVoice
+      case x if x == ComboDrop.toString => ComboDrop
+      case x if x == HpDem.toString => HpDem
+      case x if x == AtkDem.toString => AtkDem
+      case x if x == RevDem.toString => RevDem
     }
   }
 
