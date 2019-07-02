@@ -12,7 +12,7 @@ object PazudoraBot extends TelegramBot(
   Option(System.getenv("PAZUDORA_BOT_KEY")).getOrElse(Source.fromFile("./KEY","UTF-8").getLines.next())
 ) with PDXParser with AdminCmds {
   val db = MonsterDB
-  var eggs = RareEggs(RareEggs.juneBrideSeason)
+  var eggs = RareEggs(RareEggs.getCollabProb("JuneBride"))
   def output(args: Seq[String], format: Monster => String) : String = {
     if(args.nonEmpty) {
       db.searchMonster(args.mkString(" ")) match {
