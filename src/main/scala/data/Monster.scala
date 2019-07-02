@@ -143,7 +143,7 @@ object Monster {
   case object DamageImmOff extends AwokenSkill { override def toString = "대미지무효관통" }
   case object Hp80UpEn extends AwokenSkill { override def toString = "HP80%이상강화" }
   case object Hp50DownEn extends AwokenSkill { override def toString = "HP50%이하강화" }
-  case object LDep extends AwokenSkill { override def toString = "L자지우기경감" }
+  case object LDep extends AwokenSkill { override def toString = "회복L자지우기" }
   case object LAtk extends AwokenSkill { override def toString = "L자지우기공격" }
   case object SkillCharge extends AwokenSkill { override def toString = "스킬충전" }
   case object AwokenAssist extends AwokenSkill { override def toString = "각성어시스트" }

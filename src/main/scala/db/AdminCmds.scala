@@ -21,29 +21,29 @@ trait AdminCmds {
       val cmd = if(args.length >= 2) args(1) else ""
       val param = if(args.length >= 3) args.drop(2).mkString(" ") else ""
       cmd match {
-        case "ecol" =>
-          setCollabEgg(eggs, param) match {
+        case "pset" =>
+          setEggFromPreset(eggs, param) match {
             case Left(x) => x
             case Right(e) =>
               eggs = e
-              "레어에그 대상 콜라보가 수정되었습니다."
+              "레어에그 대상 몬스터가 수정되었습니다."
           }
         case "rset" => rollSetting(eggs)
         case "clcc" => clearCache(param)
         case _ =>
           """커맨드는 다음 중 하나여야 합니다:
-            |ecol : 레어에그 대상 콜라보를 선택합니다.
+            |pset : 레어에그 대상 몬스터를 프리셋에서 선택합니다.
             |rset : 현재 레어에그 셋팅을 출력합니다.
             |clcc : 몬스터 캐쉬를 제거합니다.
           """.stripMargin
       }
     } else "어드민 키가 맞지 않습니다."
   }
-  private def setCollabEgg(egg: RareEggs, args: String) : Either[String,RareEggs] = {
-    val newProb = RareEggs.getCollabProb(args)
+  private def setEggFromPreset(egg: RareEggs, args: String) : Either[String,RareEggs] = {
+    val newProb = RareEggs.getProb(args)
     if(newProb.isEmpty) Left(
-      s"${args}를 찾을 수 없습니다. 가능한 콜라보중 하나를 선택해주세요:\n${
-        RareEggs.collabProbData.keys.map{_.toString}.toList.sorted.mkString("\n")
+      s"${args}를 찾을 수 없습니다. 가능한 프리셋 중 하나를 선택해주세요:\n${
+        RareEggs.probData.keys.map{_.toString}.toList.sorted.mkString("\n")
       }")
     else Right(egg.copy(prob = newProb))
   }

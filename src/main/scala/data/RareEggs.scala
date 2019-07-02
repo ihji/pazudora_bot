@@ -101,10 +101,66 @@ object RareEggs {
       4414, // 제라
       4647, // 사레네
       4649  // 벨로아
+    ),
+    Japanese1 -> Seq(
+      1726, // 각성 카구츠치
+      2322, // 각성 오로치
+      2323, // 각성 스사노오노
+      2324, // 각성 아마테라스
+      2325  // 각성 츠쿠요미
+    ),
+    Indian1 -> Seq(
+      1954, // 각성 시바
+      1955, // 각성 락슈미
+      1956, // 각성 파르바티
+      2979, // 각성 인드라
+      2980  // 각성 브리트라
+    ),
+    Egypt1 -> Seq(
+      2009, // 각성 호루스
+      2010, // 각성 이시스
+      2011, // 각성 바스테트
+      2012, // 각성 라
+      2013  // 각성 아누비스
+    ),
+    Sabang -> Seq(
+      2073, // 각성 레이란
+      2074, // 각성 카린
+      2075, // 각성 메이메이
+      2389, // 각성 사쿠야
+      2076  // 각성 하쿠
+    ),
+    Hero -> Seq(
+      3509, // 각성 야마토
+      3510, // 각성 안드로메다
+      3511, // 각성 페르세우스
+      3512, // 각성 손오공
+      2662  // 각성 판도라
+    ),
+    Indian2 -> Seq(
+      3592, // 각성 크리슈나
+      3593, // 각성 사라스바티
+      3594, // 각성 비슈누
+      3595, // 각성 가네샤
+      3596  // 각성 두르가
+    ),
+    Jeongook -> Seq(
+      3840, // 각성 사나다
+      3841, // 각성 모리
+      3842, // 각성 이시다
+      3843, // 각성 마에다
+      3844  // 각성 아케치
+    ),
+    Myoungwang -> Seq(
+      4248, // 각성 항삼세명왕
+      4250, // 각성 군다리명왕
+      4252, // 각성 부동명왕
+      4254, // 각성 금강야차명왕
+      4256  // 각성 대위덕명왕
     )
   )
 
-  val collabProbData = Map(
+  val probData = Map(
     JuneBride -> Map(
       1.0 -> Seq(5382),
       1.5 -> Seq(4588, 4589, 2949, 3790),
@@ -123,29 +179,29 @@ object RareEggs {
       3.5 -> Seq(2033, 2772, 3295, 3798, 2035, 2041, 2781, 3800, 2037, 2770, 2776, 2774),
       3.0 -> Seq(5396),
       4.06 -> Seq(2045, 2783, 3300, 2047, 3302, 2049, 3802, 2039)
+    ),
+    GF190630 -> Map(
+      0.3 -> (monsterGroups(Ney) ++ monsterGroups(Cotten)),
+      1.5 -> (monsterGroups(Witch) ++
+              Seq(5133, 4834, 4838, 5125, 5127, 5234, 643, 1588, 1949, 1951, 2146, 2997, 3268, 3786, 4062)),
+      1.68 -> (monsterGroups(Japanese1) ++ monsterGroups(Indian1) ++ monsterGroups(Indian2) ++ monsterGroups(Egypt1) ++
+               monsterGroups(Sabang) ++ monsterGroups(Hero) ++ monsterGroups(Jeongook) ++ monsterGroups(Myoungwang))
     )
-  )
-
-  val endOfJuneGodFest = Map(
-    0.3 -> (monsterGroups(Ney) ++ monsterGroups(Cotten)),
-    1.5 -> (monsterGroups(Witch) ++
-            Seq(5133, 4834, 4838, 5125, 5127, 5234, 643, 1588, 1949, 1951, 2146, 2997, 3268, 3786, 4062)),
-    1.68 -> (monsterGroups(Japanese1) ++ monsterGroups(Indian1) ++ monsterGroups(Indian2) ++ monsterGroups(Egypt1) ++
-             monsterGroups(Sabang) ++ monsterGroups(Hero) ++ monsterGroups(Jeongook) ++ monsterGroups(Myoungwang))
   )
 
   def getMonsterGroup(name: String) : Seq[Int] = {
     monsterGroups.find{_._1.toString == name}.map{_._2}.toSeq.flatten
   }
 
-  def getCollabProb(name: String) : Map[Double, Seq[Int]] = {
-    collabProbData.find{_._1.toString == name}.map{_._2}.getOrElse(Map())
+  def getProb(name: String) : Map[Double, Seq[Int]] = {
+    probData.find{_._1.toString == name}.map{_._2}.getOrElse(Map())
   }
 
-  sealed trait CollabGroup
-  case object JuneBride extends CollabGroup
-  case object YokaiWatch extends CollabGroup
-  case object FinalFantasy extends CollabGroup
+  sealed trait ProbGroup
+  case object JuneBride extends ProbGroup
+  case object YokaiWatch extends ProbGroup
+  case object FinalFantasy extends ProbGroup
+  case object GF190630 extends ProbGroup
 
   sealed trait MonsterGroup
   case object GodFestLimited extends MonsterGroup
