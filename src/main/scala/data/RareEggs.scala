@@ -94,6 +94,13 @@ object RareEggs {
       3899, // 나무코튼
       3900, // 빛코튼
       3901  // 어둠코튼
+    ),
+    Witch -> Seq(
+      4410, // 마두
+      4412, // 리체
+      4414, // 제라
+      4647, // 사레네
+      4649  // 벨로아
     )
   )
 
@@ -110,7 +117,21 @@ object RareEggs {
       2.5 -> Seq(4949, 4955, 4952, 4957, 4959),
       3.5 -> Seq(4965),
       14.0 -> Seq(4961, 4971, 4963, 4967, 4973, 4969)
+    ),
+    FinalFantasy -> Map(
+      2.5 -> Seq(3796, 2029, 2043, 2778, 3297, 5394, 2031, 2767, 3304),
+      3.5 -> Seq(2033, 2772, 3295, 3798, 2035, 2041, 2781, 3800, 2037, 2770, 2776, 2774),
+      3.0 -> Seq(5396),
+      4.06 -> Seq(2045, 2783, 3300, 2047, 3302, 2049, 3802, 2039)
     )
+  )
+
+  val endOfJuneGodFest = Map(
+    0.3 -> (monsterGroups(Ney) ++ monsterGroups(Cotten)),
+    1.5 -> (monsterGroups(Witch) ++
+            Seq(5133, 4834, 4838, 5125, 5127, 5234, 643, 1588, 1949, 1951, 2146, 2997, 3268, 3786, 4062)),
+    1.68 -> (monsterGroups(Japanese1) ++ monsterGroups(Indian1) ++ monsterGroups(Indian2) ++ monsterGroups(Egypt1) ++
+             monsterGroups(Sabang) ++ monsterGroups(Hero) ++ monsterGroups(Jeongook) ++ monsterGroups(Myoungwang))
   )
 
   def getMonsterGroup(name: String) : Seq[Int] = {
@@ -124,9 +145,19 @@ object RareEggs {
   sealed trait CollabGroup
   case object JuneBride extends CollabGroup
   case object YokaiWatch extends CollabGroup
+  case object FinalFantasy extends CollabGroup
 
   sealed trait MonsterGroup
   case object GodFestLimited extends MonsterGroup
   case object Ney extends MonsterGroup
   case object Cotten extends MonsterGroup
+  case object Witch extends MonsterGroup
+  case object Japanese1 extends MonsterGroup
+  case object Indian1 extends MonsterGroup
+  case object Indian2 extends MonsterGroup
+  case object Egypt1 extends MonsterGroup
+  case object Sabang extends MonsterGroup
+  case object Hero extends MonsterGroup
+  case object Jeongook extends MonsterGroup
+  case object Myoungwang extends MonsterGroup
 }
